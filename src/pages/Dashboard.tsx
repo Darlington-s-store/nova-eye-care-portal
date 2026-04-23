@@ -1,0 +1,301 @@
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { Layout } from "@/components/Layout";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { notifyAdmins, notifyUser } from "@/lib/notify";
+import { TIME_SLOTS_WEEKDAY, TIME_SLOTS_SATURDAY } from "@/lib/clinic";
+import { toast } from "sonner";
+import { NotificationBell } from "@/components/NotificationBell";
+import {
+  CalendarPlus, CalendarX, LogOut, Calendar, Clock, FileText, Loader2,
+  User, Star, RefreshCw, ShieldCheck,
+} from "lucide-react";
+
+type Appointment = {
+  id: string;
+  service: string;
+  appointment_date: string;
+  appointment_time: string;
+  notes: string | null;
+  status: "pending" | "confirmed" | "cancelled" | "completed";
+  created_at: string;
+};
+
+type Profile = { full_name: string | null; phone: string | null; email: string | null };
+
+const statusStyles: Record<Appointment["status"], string> = {
+  pending: "bg-yellow-100 text-yellow-900 hover:bg-yellow-100",
+  confirmed: "bg-primary-soft text-primary hover:bg-primary-soft",
+  cancelled: "bg-muted text-muted-foreground hover:bg-muted",
+  completed: "bg-green-100 text-green-900 hover:bg-green-100",
+};
+
+const Dashboard = () => {
+  const navigate = useNavigate();
+  const { user, isAdmin, loading: authLoading } = useAuth();
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [reschedule, setReschedule] = useState<Appointment | null>(null);
+  const [rNew, setRNew] = useState({ date: "", time: "" });
+  const [rSaving, setRSaving] = useState(false);
+
+  useEffect(() => {
+    if (!user) return;
+    (async () => {
+      setLoading(true);
+      const [{ data: appts }, { data: prof }] = await Promise.all([
+        supabase.from("appointments").select("*").eq("user_id", user.id).order("appointment_date", { ascending: false }),
+        supabase.from("profiles").select("full_name, phone, email").eq("id", user.id).single(),
+      ]);
+      setAppointments((appts as Appointment[]) || []);
+      setProfile(prof as Profile);
+      setLoading(false);
+    })();
+
+    const ch = supabase.channel(`dash-${user.id}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "appointments", filter: `user_id=eq.${user.id}` },
+        async () => {
+          const { data: appts } = await supabase.from("appointments").select("*").eq("user_id", user.id).order("appointment_date", { ascending: false });
+          setAppointments((appts as Appointment[]) || []);
+        })
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [user]);
+
+  const cancelAppointment = async (a: Appointment) => {
+    if (!confirm("Cancel this appointment?")) return;
+    const { error } = await supabase.from("appointments").update({ status: "cancelled" }).eq("id", a.id);
+    if (error) { toast.error(error.message); return; }
+    await notifyAdmins({
+      title: "Appointment cancelled",
+      body: `${profile?.full_name ?? "A patient"} cancelled their ${a.service} on ${new Date(a.appointment_date).toLocaleDateString("en-GB")}.`,
+      link: "/admin/appointments",
+    });
+    if (user) await notifyUser(user.id, { title: "Appointment cancelled", body: `Your ${a.service} appointment was cancelled.`, link: "/dashboard" });
+    toast.success("Appointment cancelled");
+  };
+
+  const submitReschedule = async () => {
+    if (!reschedule || !rNew.date || !rNew.time) return;
+    setRSaving(true);
+    const { error } = await supabase.from("appointments").update({
+      appointment_date: rNew.date,
+      appointment_time: rNew.time,
+      status: "pending",
+    }).eq("id", reschedule.id);
+    setRSaving(false);
+    if (error) { toast.error(error.message); return; }
+    await notifyAdmins({
+      title: "Appointment rescheduled",
+      body: `${profile?.full_name ?? "A patient"} rescheduled ${reschedule.service} to ${new Date(rNew.date).toLocaleDateString("en-GB")} at ${rNew.time}.`,
+      link: "/admin/appointments",
+    });
+    if (user) await notifyUser(user.id, { title: "Appointment rescheduled", body: `New time: ${new Date(rNew.date).toLocaleDateString("en-GB")} at ${rNew.time}. Pending confirmation.`, link: "/dashboard" });
+    toast.success("Rescheduled — awaiting confirmation");
+    setReschedule(null);
+    setRNew({ date: "", time: "" });
+  };
+
+  const signOut = async () => {
+    await supabase.auth.signOut();
+    navigate("/", { replace: true });
+  };
+
+  const today = new Date(new Date().toDateString());
+  const upcoming = appointments.filter((a) => a.status !== "cancelled" && a.status !== "completed" && new Date(a.appointment_date) >= today);
+  const past = appointments.filter((a) => !upcoming.includes(a));
+
+  const minDate = new Date().toISOString().split("T")[0];
+  const rDay = rNew.date ? new Date(rNew.date).getDay() : null;
+  const rSlots = rDay === 6 ? TIME_SLOTS_SATURDAY : TIME_SLOTS_WEEKDAY;
+  const rSunday = rDay === 0;
+
+  if (authLoading) {
+    return (
+      <Layout>
+        <div className="container py-20 flex justify-center"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
+      </Layout>
+    );
+  }
+
+  return (
+    <Layout>
+      <section className="bg-hero-gradient text-primary-foreground">
+        <div className="container py-12 flex flex-wrap gap-4 items-center justify-between">
+          <div>
+            <p className="text-sm opacity-90 mb-1">Welcome back,</p>
+            <h1 className="text-2xl md:text-3xl font-bold">{profile?.full_name || user?.email}</h1>
+          </div>
+          <div className="flex gap-2 items-center">
+            <NotificationBell audience="user" variant="light" />
+            {isAdmin && (
+              <Button asChild variant="outline" className="bg-white/10 border-white/40 text-primary-foreground hover:bg-white/20 hover:text-primary-foreground">
+                <Link to="/admin"><ShieldCheck className="h-4 w-4" /> Admin</Link>
+              </Button>
+            )}
+            <Button asChild variant="outline" className="bg-white/10 border-white/40 text-primary-foreground hover:bg-white/20 hover:text-primary-foreground">
+              <Link to="/book"><CalendarPlus className="h-4 w-4" /> New</Link>
+            </Button>
+            <Button onClick={signOut} variant="outline" className="bg-white/10 border-white/40 text-primary-foreground hover:bg-white/20 hover:text-primary-foreground">
+              <LogOut className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      <section className="container py-10 grid gap-6 lg:grid-cols-3">
+        <div className="lg:col-span-1 space-y-4">
+          <Card className="p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-soft text-primary">
+                <User className="h-5 w-5" />
+              </span>
+              <h2 className="font-semibold">Your Profile</h2>
+            </div>
+            <dl className="space-y-3 text-sm">
+              <div>
+                <dt className="text-xs text-muted-foreground uppercase tracking-wide">Name</dt>
+                <dd className="font-medium">{profile?.full_name || "—"}</dd>
+              </div>
+              <div>
+                <dt className="text-xs text-muted-foreground uppercase tracking-wide">Email</dt>
+                <dd className="font-medium break-all">{profile?.email || user?.email}</dd>
+              </div>
+              <div>
+                <dt className="text-xs text-muted-foreground uppercase tracking-wide">Phone</dt>
+                <dd className="font-medium">{profile?.phone || "—"}</dd>
+              </div>
+            </dl>
+            <Button asChild variant="outline" size="sm" className="w-full mt-5">
+              <Link to="/profile">Edit profile</Link>
+            </Button>
+          </Card>
+
+          <Card className="p-6">
+            <div className="flex items-center gap-3 mb-3">
+              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-soft text-primary">
+                <Star className="h-5 w-5" />
+              </span>
+              <h2 className="font-semibold">Share your experience</h2>
+            </div>
+            <p className="text-sm text-muted-foreground mb-4">
+              Help others by leaving a review of your visit.
+            </p>
+            <Button asChild variant="hero" size="sm" className="w-full">
+              <Link to="/reviews">Write a review</Link>
+            </Button>
+          </Card>
+        </div>
+
+        <div className="lg:col-span-2 space-y-8">
+          <div>
+            <h2 className="font-bold text-xl mb-4">Upcoming Appointments</h2>
+            {loading ? (
+              <div className="flex justify-center py-10"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
+            ) : upcoming.length === 0 ? (
+              <Card className="p-8 text-center">
+                <Calendar className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+                <p className="text-muted-foreground mb-4">No upcoming appointments.</p>
+                <Button asChild variant="hero"><Link to="/book">Book your first appointment</Link></Button>
+              </Card>
+            ) : (
+              <div className="space-y-3">
+                {upcoming.map((a) => (
+                  <AppointmentCard key={a.id} a={a} onCancel={cancelAppointment} onReschedule={(x) => { setReschedule(x); setRNew({ date: x.appointment_date, time: x.appointment_time }); }} canManage />
+                ))}
+              </div>
+            )}
+          </div>
+
+          {past.length > 0 && (
+            <div>
+              <h2 className="font-bold text-xl mb-4">Past & Cancelled</h2>
+              <div className="space-y-3">
+                {past.map((a) => <AppointmentCard key={a.id} a={a} onCancel={cancelAppointment} onReschedule={() => {}} />)}
+              </div>
+            </div>
+          )}
+        </div>
+      </section>
+
+      <Dialog open={!!reschedule} onOpenChange={(o) => !o && setReschedule(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Reschedule appointment</DialogTitle>
+            <DialogDescription>{reschedule?.service}</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="rd">New date</Label>
+              <Input id="rd" type="date" min={minDate} value={rNew.date}
+                onChange={(e) => setRNew({ ...rNew, date: e.target.value, time: "" })}
+                className="mt-1.5" />
+              {rSunday && <p className="text-xs text-destructive mt-1">Closed on Sundays.</p>}
+            </div>
+            <div>
+              <Label>New time</Label>
+              <Select value={rNew.time} onValueChange={(v) => setRNew({ ...rNew, time: v })} disabled={!rNew.date || rSunday}>
+                <SelectTrigger className="mt-1.5"><SelectValue placeholder="Select a time" /></SelectTrigger>
+                <SelectContent className="max-h-64">
+                  {rSlots.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setReschedule(null)}>Cancel</Button>
+            <Button variant="hero" onClick={submitReschedule} disabled={!rNew.date || !rNew.time || rSaving}>
+              {rSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Confirm reschedule"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </Layout>
+  );
+};
+
+const AppointmentCard = ({ a, onCancel, onReschedule, canManage }: {
+  a: Appointment;
+  onCancel: (a: Appointment) => void;
+  onReschedule: (a: Appointment) => void;
+  canManage?: boolean;
+}) => (
+  <Card className="p-5">
+    <div className="flex flex-wrap items-start justify-between gap-3 mb-3">
+      <div>
+        <h3 className="font-semibold">{a.service}</h3>
+        <p className="text-sm text-muted-foreground flex flex-wrap gap-x-4 gap-y-1 mt-1">
+          <span className="flex items-center gap-1"><Calendar className="h-3.5 w-3.5" /> {new Date(a.appointment_date).toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", year: "numeric" })}</span>
+          <span className="flex items-center gap-1"><Clock className="h-3.5 w-3.5" /> {a.appointment_time}</span>
+        </p>
+      </div>
+      <Badge className={statusStyles[a.status]} variant="secondary">{a.status === "pending" ? "Requested" : a.status}</Badge>
+    </div>
+    {a.notes && (
+      <p className="text-sm text-muted-foreground flex items-start gap-2 mb-3">
+        <FileText className="h-4 w-4 mt-0.5 shrink-0" />{a.notes}
+      </p>
+    )}
+    {canManage && a.status !== "cancelled" && (
+      <div className="flex flex-wrap gap-2">
+        <Button size="sm" variant="outline" onClick={() => onReschedule(a)}>
+          <RefreshCw className="h-4 w-4" /> Reschedule
+        </Button>
+        <Button size="sm" variant="outline" className="text-destructive hover:text-destructive" onClick={() => onCancel(a)}>
+          <CalendarX className="h-4 w-4" /> Cancel
+        </Button>
+      </div>
+    )}
+  </Card>
+);
+
+export default Dashboard;

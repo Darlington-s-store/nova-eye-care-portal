@@ -1,0 +1,410 @@
+import { useEffect, useState } from "react";
+import { useSearchParams, Link } from "react-router-dom";
+import { Layout } from "@/components/Layout";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { SERVICES, TIME_SLOTS_WEEKDAY, TIME_SLOTS_SATURDAY, CLINIC } from "@/lib/clinic";
+import { supabase } from "@/integrations/supabase/client";
+import { notifyAdmins, notifyUser } from "@/lib/notify";
+import { CheckCircle2, CalendarCheck, Loader2, Clock, Phone, Mail, Sparkles, ShieldCheck, ArrowRight, ArrowLeft } from "lucide-react";
+import { z } from "zod";
+import { PageHero } from "@/components/PageHero";
+import { motion, AnimatePresence } from "framer-motion";
+import heroBook from "@/assets/hero-book.jpg";
+
+const schema = z.object({
+  full_name: z.string().trim().min(2, "Please enter your full name").max(100),
+  phone: z.string().trim().min(7, "Please enter a valid phone number").max(20),
+  email: z.string().trim().email("Please enter a valid email").max(255),
+  service: z.string().min(1, "Please select a service"),
+  appointment_date: z.string().min(1, "Please select a date"),
+  appointment_time: z.string().min(1, "Please select a time"),
+  notes: z.string().max(1000).optional(),
+});
+
+const STEPS = ["Service", "Schedule", "Your details"] as const;
+
+const stepVariants = {
+  initial: { opacity: 0, x: 20 },
+  animate: { opacity: 1, x: 0 },
+  exit: { opacity: 0, x: -20 },
+} as const;
+
+const Book = () => {
+  const [searchParams] = useSearchParams();
+  const presetSlug = searchParams.get("service");
+  const presetService = SERVICES.find((s) => s.slug === presetSlug)?.name ?? "";
+
+  const [step, setStep] = useState(0);
+  const [form, setForm] = useState({
+    full_name: "", phone: "", email: "",
+    service: presetService,
+    appointment_date: "", appointment_time: "",
+    notes: "",
+  });
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [submitting, setSubmitting] = useState(false);
+  const [success, setSuccess] = useState<typeof form | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      if (data.user) {
+        setUserId(data.user.id);
+        supabase.from("profiles").select("full_name, phone, email").eq("id", data.user.id).single()
+          .then(({ data: p }) => {
+            if (p) setForm((f) => ({
+              ...f,
+              full_name: f.full_name || p.full_name || "",
+              phone: f.phone || p.phone || "",
+              email: f.email || p.email || data.user!.email || "",
+            }));
+          });
+      }
+    });
+  }, []);
+
+  const dayOfWeek = form.appointment_date ? new Date(form.appointment_date).getDay() : null;
+  const isSaturday = dayOfWeek === 6;
+  const isSunday = dayOfWeek === 0;
+  const slots = isSaturday ? TIME_SLOTS_SATURDAY : TIME_SLOTS_WEEKDAY;
+
+  const update = (k: keyof typeof form, v: string) => {
+    setForm((f) => ({ ...f, [k]: v }));
+    setErrors((e) => ({ ...e, [k]: "" }));
+  };
+
+  const minDate = new Date().toISOString().split("T")[0];
+
+  const canNext = () => {
+    if (step === 0) return !!form.service;
+    if (step === 1) return !!form.appointment_date && !!form.appointment_time && !isSunday;
+    return true;
+  };
+
+  const next = () => setStep((s) => Math.min(s + 1, STEPS.length - 1));
+  const prev = () => setStep((s) => Math.max(s - 1, 0));
+
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (isSunday) {
+      setErrors({ appointment_date: "We are closed on Sundays. Please pick another day." });
+      return;
+    }
+    const parsed = schema.safeParse(form);
+    if (!parsed.success) {
+      const fieldErrors: Record<string, string> = {};
+      parsed.error.issues.forEach((i) => { fieldErrors[i.path[0] as string] = i.message; });
+      setErrors(fieldErrors);
+      return;
+    }
+    setSubmitting(true);
+    
+    const { error } = await supabase.from("appointments").insert({
+      full_name: parsed.data.full_name,
+      phone: parsed.data.phone,
+      email: parsed.data.email,
+      service: parsed.data.service,
+      appointment_date: parsed.data.appointment_date,
+      appointment_time: parsed.data.appointment_time,
+      notes: parsed.data.notes ?? null,
+      user_id: userId,
+    });
+    if (!error) {
+      await notifyAdmins({
+        title: "New appointment request",
+        body: `${parsed.data.full_name} requested ${parsed.data.service} on ${new Date(parsed.data.appointment_date).toLocaleDateString("en-GB")} at ${parsed.data.appointment_time}.`,
+        link: "/admin/appointments",
+      });
+      if (userId) {
+        await notifyUser(userId, {
+          title: "Appointment request received",
+          body: `We'll confirm your ${parsed.data.service} on ${new Date(parsed.data.appointment_date).toLocaleDateString("en-GB")} at ${parsed.data.appointment_time}.`,
+          link: "/dashboard",
+        });
+      }
+    }
+    setSubmitting(false);
+    if (error) {
+      setErrors({ form: error.message });
+      return;
+    }
+    setSuccess(form);
+    setForm({ full_name: "", phone: "", email: "", service: "", appointment_date: "", appointment_time: "", notes: "" });
+    setStep(0);
+  };
+
+  if (success) {
+    return (
+      <Layout>
+        <section className="container py-24">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ type: "spring", damping: 25, stiffness: 200 }}
+          >
+            <Card className="max-w-2xl mx-auto p-12 text-center shadow-elegant rounded-[2rem] border-primary/10">
+              <div className="mx-auto mb-8 flex h-20 w-20 items-center justify-center rounded-full bg-primary-soft text-primary shadow-sm ring-8 ring-primary-soft/50">
+                <CheckCircle2 className="h-10 w-10" />
+              </div>
+              <h1 className="text-3xl md:text-4xl font-bold mb-4 tracking-tight">Appointment requested!</h1>
+              <p className="text-muted-foreground text-lg mb-2 leading-relaxed">
+                Thank you, <strong className="text-foreground font-bold">{success.full_name}</strong>.
+              </p>
+              <p className="text-muted-foreground text-lg mb-10 leading-relaxed">
+                Your request for <strong className="text-foreground font-bold">{success.service}</strong> on{" "}
+                <strong className="text-foreground font-bold">{new Date(success.appointment_date).toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}</strong>{" "}
+                at <strong className="text-foreground font-bold">{success.appointment_time}</strong> has been received.
+                We will call <strong className="text-foreground font-bold">{success.phone}</strong> to confirm.
+              </p>
+              <div className="flex flex-wrap gap-4 justify-center">
+                <Button onClick={() => setSuccess(null)} variant="outline" size="lg" className="rounded-xl px-8">Book another</Button>
+                {userId ? (
+                  <Button asChild variant="hero" size="lg" className="rounded-xl px-8"><Link to="/dashboard">Go to dashboard</Link></Button>
+                ) : (
+                  <Button asChild variant="hero" size="lg" className="rounded-xl px-8"><Link to="/auth">Create an account</Link></Button>
+                )}
+              </div>
+            </Card>
+          </motion.div>
+        </section>
+      </Layout>
+    );
+  }
+
+  return (
+    <Layout>
+      <PageHero
+        image={heroBook}
+        eyebrow="Schedule a Visit"
+        title="Book an Appointment"
+        subtitle="Three quick steps. We'll call to confirm your visit and answer any questions."
+      />
+
+      <section className="container py-16 md:py-24">
+        <div className="grid gap-12 lg:grid-cols-3">
+          {/* Sidebar info */}
+          <motion.aside 
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.2 }}
+            className="lg:col-span-1 space-y-6 order-2 lg:order-1"
+          >
+            <Card className="p-8 bg-hero-gradient text-primary-foreground border-0 shadow-elegant rounded-3xl relative overflow-hidden group">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-bl-full -mr-16 -mt-16 group-hover:scale-110 transition-transform duration-700" />
+              <h3 className="font-bold text-xl mb-4 flex items-center gap-2"><Sparkles className="h-5 w-5" /> why NOVA?</h3>
+              <ul className="space-y-3 text-sm md:text-base opacity-100 font-medium">
+                <li className="flex items-center gap-2"><div className="h-1.5 w-1.5 rounded-full bg-white/50" /> Same-week availability</li>
+                <li className="flex items-center gap-2"><div className="h-1.5 w-1.5 rounded-full bg-white/50" /> Qualified, licensed optometrists</li>
+                <li className="flex items-center gap-2"><div className="h-1.5 w-1.5 rounded-full bg-white/50" /> Comprehensive examinations</li>
+                <li className="flex items-center gap-2"><div className="h-1.5 w-1.5 rounded-full bg-white/50" /> Friendly, modern clinic</li>
+              </ul>
+            </Card>
+            <Card className="p-6 rounded-2xl border-border/60">
+              <h3 className="font-bold text-lg mb-4 flex items-center gap-2"><Clock className="h-5 w-5 text-primary" /> Working hours</h3>
+              <ul className="text-sm text-muted-foreground space-y-2 font-medium">
+                <li className="flex justify-between"><span>Mon–Fri</span> <span>{CLINIC.hours.weekdays.split(': ')[1]}</span></li>
+                <li className="flex justify-between"><span>Saturday</span> <span>{CLINIC.hours.saturday.split(': ')[1]}</span></li>
+                <li className="flex justify-between text-destructive"><span>Sunday</span> <span>Closed</span></li>
+              </ul>
+            </Card>
+            <Card className="p-6 rounded-2xl border-border/60">
+              <h3 className="font-bold text-lg mb-4">Need help?</h3>
+              <a href={`tel:${CLINIC.phones[0]}`} className="flex items-center gap-3 text-sm text-foreground hover:text-primary mb-3 transition-colors font-semibold group">
+                <div className="h-9 w-9 rounded-lg bg-primary-soft flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all">
+                  <Phone className="h-4 w-4" />
+                </div> 
+                {CLINIC.phones[0]}
+              </a>
+              <a href={`mailto:${CLINIC.email}`} className="flex items-center gap-3 text-sm text-foreground hover:text-primary transition-colors font-semibold group">
+                <div className="h-9 w-9 rounded-lg bg-primary-soft flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all">
+                  <Mail className="h-4 w-4" />
+                </div>
+                {CLINIC.email}
+              </a>
+            </Card>
+            <p className="text-xs text-muted-foreground flex items-start gap-2 px-1 leading-relaxed">
+              <ShieldCheck className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+              Your data is encrypted and handled according to healthcare privacy standards.
+            </p>
+          </motion.aside>
+
+          {/* Form */}
+          <div className="lg:col-span-2 order-1 lg:order-2">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <Card className="p-8 md:p-12 shadow-card rounded-[2rem] border-border/60">
+                {/* Stepper */}
+                <div className="flex items-center justify-between mb-12 relative">
+                  <div className="absolute top-1/2 left-0 w-full h-0.5 bg-muted -translate-y-1/2 z-0" />
+                  {STEPS.map((label, i) => {
+                    const active = i === step;
+                    const done = i < step;
+                    return (
+                      <div key={label} className="relative z-10 flex flex-col items-center gap-3 bg-card px-2">
+                        <motion.span 
+                          animate={active ? { scale: 1.1 } : { scale: 1 }}
+                          className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold shrink-0 transition-colors duration-500 ${
+                            done ? "bg-primary text-primary-foreground shadow-lg" : active ? "bg-primary-soft text-primary ring-2 ring-primary shadow-md" : "bg-muted text-muted-foreground"
+                          }`}
+                        >
+                          {done ? <CheckCircle2 className="h-5 w-5" /> : i + 1}
+                        </motion.span>
+                        <span className={`text-xs font-bold uppercase tracking-wider ${active ? "text-primary" : "text-muted-foreground"}`}>{label}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+  
+                <AnimatePresence mode="wait" initial={false}>
+                  <motion.form 
+                    key={step}
+                    variants={stepVariants}
+                    initial="initial"
+                    animate="animate"
+                    exit="exit"
+                    onSubmit={onSubmit} 
+                    className="space-y-8"
+                  >
+                    {step === 0 && (
+                      <div className="space-y-6">
+                        <div>
+                          <h2 className="font-bold text-2xl mb-2 tracking-tight">Choose a service</h2>
+                          <p className="text-muted-foreground">What can we help you with today?</p>
+                        </div>
+                        <div className="grid gap-3">
+                          {SERVICES.map((s) => (
+                            <button
+                              type="button"
+                              key={s.slug}
+                              onClick={() => update("service", s.name)}
+                              className={`p-6 rounded-2xl border-2 text-left transition-all duration-300 group ${
+                                form.service === s.name ? "border-primary bg-primary-soft/40 shadow-sm" : "border-border hover:border-primary/40 hover:bg-muted/30"
+                              }`}
+                            >
+                              <div className="flex justify-between items-center">
+                                <p className={`font-bold text-lg ${form.service === s.name ? "text-primary" : ""}`}>{s.name}</p>
+                                {form.service === s.name && <CheckCircle2 className="h-5 w-5 text-primary" />}
+                              </div>
+                              <p className="text-sm text-muted-foreground mt-1 leading-relaxed">{s.short}</p>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+  
+                    {step === 1 && (
+                      <div className="space-y-8">
+                        <div>
+                          <h2 className="font-bold text-2xl mb-2 tracking-tight">Pick a date and time</h2>
+                          <p className="text-muted-foreground text-base">We're open Monday through Saturday for your convenience.</p>
+                        </div>
+                        <div className="grid gap-6 sm:grid-cols-2">
+                          <div className="space-y-2">
+                            <Label htmlFor="date" className="text-sm font-bold">Preferred date</Label>
+                            <Input id="date" type="date" min={minDate} value={form.appointment_date}
+                              onChange={(e) => { update("appointment_date", e.target.value); update("appointment_time", ""); }}
+                              className="h-14 rounded-xl border-border/60 px-4 focus-visible:ring-primary focus-visible:border-primary" />
+                            {isSunday && <p className="text-xs font-medium text-destructive mt-1.5 flex items-center gap-1.5"><Clock className="h-3.5 w-3.5" /> Closed on Sundays. Please pick another day.</p>}
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-sm font-bold">Preferred time</Label>
+                            <Select value={form.appointment_time} onValueChange={(v) => update("appointment_time", v)} disabled={!form.appointment_date || isSunday}>
+                              <SelectTrigger className="h-14 rounded-xl border-border/60 px-4 focus-visible:ring-primary focus-visible:border-primary">
+                                <SelectValue placeholder="Select a time" />
+                              </SelectTrigger>
+                              <SelectContent className="max-h-64 rounded-xl">
+                                {slots.map((t) => <SelectItem key={t} value={t} className="rounded-lg">{t}</SelectItem>)}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                        {form.appointment_date && form.appointment_time && (
+                          <motion.div 
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            className="rounded-2xl bg-primary-soft p-6 flex items-center gap-4 text-primary shadow-sm"
+                          >
+                            <div className="h-12 w-12 rounded-xl bg-white/50 flex items-center justify-center text-primary shadow-inner">
+                              <CalendarCheck className="h-6 w-6" />
+                            </div>
+                            <p className="text-base">
+                              Booking <strong>{form.service}</strong> on <br />
+                              <span className="font-bold">{new Date(form.appointment_date).toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" })}</span> at <span className="font-bold">{form.appointment_time}</span>
+                            </p>
+                          </motion.div>
+                        )}
+                      </div>
+                    )}
+  
+                    {step === 2 && (
+                      <div className="space-y-8">
+                        <div>
+                          <h2 className="font-bold text-2xl mb-2 tracking-tight">Your contact details</h2>
+                          <p className="text-muted-foreground">Please provide active details so we can call to confirm.</p>
+                        </div>
+                        <div className="grid gap-6 sm:grid-cols-2">
+                          <div className="space-y-2">
+                            <Label htmlFor="full_name" className="text-sm font-bold">Full name *</Label>
+                            <Input id="full_name" value={form.full_name} onChange={(e) => update("full_name", e.target.value)} className="h-14 rounded-xl border-border/60" />
+                            {errors.full_name && <p className="text-xs font-semibold text-destructive mt-1">{errors.full_name}</p>}
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="phone" className="text-sm font-bold">Phone number *</Label>
+                            <Input id="phone" type="tel" value={form.phone} onChange={(e) => update("phone", e.target.value)} className="h-14 rounded-xl border-border/60" placeholder="0244 000 000" />
+                            {errors.phone && <p className="text-xs font-semibold text-destructive mt-1">{errors.phone}</p>}
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="email" className="text-sm font-bold">Email address *</Label>
+                          <Input id="email" type="email" value={form.email} onChange={(e) => update("email", e.target.value)} className="h-14 rounded-xl border-border/60" />
+                          {errors.email && <p className="text-xs font-semibold text-destructive mt-1">{errors.email}</p>}
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="notes" className="text-sm font-bold">Anything we should know? (optional)</Label>
+                          <Textarea id="notes" value={form.notes} onChange={(e) => update("notes", e.target.value)} rows={4} className="rounded-xl border-border/60 px-4 py-3" placeholder="Symptoms, accessibility needs, or prior visits..." />
+                        </div>
+                        {errors.form && <p className="text-sm font-semibold text-destructive text-center bg-destructive/5 py-3 rounded-lg">{errors.form}</p>}
+                      </div>
+                    )}
+  
+                    <div className="flex gap-4 pt-6">
+                      {step > 0 && (
+                        <Button type="button" variant="outline" size="lg" onClick={prev} className="flex-1 h-14 rounded-xl font-bold bg-muted/20">
+                          <ArrowLeft className="h-4 w-4 mr-2" /> Back
+                        </Button>
+                      )}
+                      {step < STEPS.length - 1 ? (
+                        <Button type="button" variant="hero" size="lg" onClick={next} disabled={!canNext()} className="flex-1 h-14 rounded-xl font-bold shadow-lg">
+                          Continue <ArrowRight className="h-4 w-4 ml-2" />
+                        </Button>
+                      ) : (
+                        <Button type="submit" variant="hero" size="lg" className="flex-1 h-14 rounded-xl font-bold shadow-lg shadow-primary/20" disabled={submitting}>
+                          {submitting ? <><Loader2 className="h-5 w-5 animate-spin mr-2" /> Submitting...</> : "Confirm booking"}
+                        </Button>
+                      )}
+                    </div>
+  
+                    {!userId && step === STEPS.length - 1 && (
+                      <p className="text-center text-sm text-muted-foreground pt-2">
+                        Want to track and reschedule? <Link to="/auth" className="text-primary font-bold hover:underline">Create an account</Link>.
+                      </p>
+                    )}
+                  </motion.form>
+                </AnimatePresence>
+              </Card>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+    </Layout>
+  );
+};
+
+export default Book;

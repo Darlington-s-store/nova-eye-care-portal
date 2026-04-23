@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "esnext",
+    "moduleResolution": "node",
+    "lib": ["esnext", "webworker"],
+    "strict": true,
+    "skipLibCheck": true
+  }
+}
