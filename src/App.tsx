@@ -1,10 +1,13 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes, useLocation, Navigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { supabase } from "@/integrations/supabase/client";
 import Index from "./pages/Index.tsx";
+import Maintenance from "./pages/Maintenance.tsx";
 import Services from "./pages/Services.tsx";
 import Book from "./pages/Book.tsx";
 import Contact from "./pages/Contact.tsx";
@@ -28,14 +31,47 @@ import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
 
+const MaintenanceManager = ({ children }: { children: React.ReactNode }) => {
+  const [maintenance, setMaintenance] = useState<boolean | null>(null);
+  const location = useLocation();
+
+  useEffect(() => {
+    const check = async () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data } = await (supabase.from("clinic_settings" as any) as any).select("maintenance_mode").maybeSingle();
+      setMaintenance(data?.maintenance_mode ?? false);
+    };
+    check();
+
+    // Subscribe to changes
+    const sub = supabase.channel('maintenance')
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'clinic_settings' }, (payload) => {
+        setMaintenance(payload.new.maintenance_mode);
+      })
+      .subscribe();
+    
+    return () => { supabase.removeChannel(sub); };
+  }, []);
+
+  if (maintenance === null) return null; // Wait for first check
+  
+  const isAdminPath = location.pathname.startsWith("/admin");
+  if (maintenance && !isAdminPath) {
+    return <Maintenance />;
+  }
+
+  return <>{children}</>;
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
+        <MaintenanceManager>
+          <Routes>
+            <Route path="/" element={<Index />} />
           <Route path="/services" element={<Services />} />
           <Route path="/book" element={<Book />} />
           <Route path="/contact" element={<Contact />} />
@@ -59,8 +95,8 @@ const App = () => (
           <Route path="/admin/chatbot" element={<ProtectedRoute requireAdmin><AdminChatbot /></ProtectedRoute>} />
           <Route path="/admin/settings" element={<ProtectedRoute requireAdmin><AdminSettings /></ProtectedRoute>} />
 
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+          </Routes>
+        </MaintenanceManager>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

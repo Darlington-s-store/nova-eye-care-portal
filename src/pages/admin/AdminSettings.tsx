@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Shield, Lock, Mail, User, Loader2, Save, Clock } from "lucide-react";
+import { Shield, Lock, Mail, User, Loader2, Save, Clock, ShieldAlert } from "lucide-react";
 
 const AdminSettings = () => {
   const [loading, setLoading] = useState(false);
@@ -221,9 +221,36 @@ const AdminSettings = () => {
                 </div>
               </div>
 
+              <div className="pt-6 mt-6 border-t bg-orange-50/30 -mx-6 px-6 py-4 rounded-b-xl border-t-orange-100">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label className="text-orange-800 font-bold flex items-center gap-2 text-base">
+                      <ShieldAlert className="h-5 w-5" />
+                      Maintenance Mode
+                    </Label>
+                    <p className="text-xs text-orange-700/70">
+                      When active, the entire website will be hidden behind a maintenance screen. 
+                      Only Admins can still access the dashboard.
+                    </p>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <input 
+                      type="checkbox" 
+                      id="maint_mode"
+                      className="h-5 w-5 accent-orange-600 rounded" 
+                      checked={clinic.maintenance_mode}
+                      onChange={(e) => setClinic({ ...clinic, maintenance_mode: e.target.checked })}
+                    />
+                    <Label htmlFor="maint_mode" className="text-orange-900 font-bold cursor-pointer">
+                      {clinic.maintenance_mode ? "ENABLED" : "OFF"}
+                    </Label>
+                  </div>
+                </div>
+              </div>
+
               <Button type="submit" disabled={loading} className="w-full sm:w-auto h-11 px-8 shadow-lg shadow-primary/10" variant="hero">
                 {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
-                Apply Clinic Settings
+                Apply All Settings
               </Button>
             </form>
           </Card>
