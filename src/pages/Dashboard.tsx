@@ -15,7 +15,7 @@ import { TIME_SLOTS_WEEKDAY, TIME_SLOTS_SATURDAY } from "@/lib/clinic";
 import { toast } from "sonner";
 import { NotificationBell } from "@/components/NotificationBell";
 import {
-  CalendarPlus, CalendarX, LogOut, Calendar, Clock, FileText, Loader2,
+  CalendarPlus, CalendarX, Calendar, Clock, FileText, Loader2,
   User, Star, RefreshCw, ShieldCheck,
 } from "lucide-react";
 
@@ -105,10 +105,6 @@ const Dashboard = () => {
     setRNew({ date: "", time: "" });
   };
 
-  const signOut = async () => {
-    await supabase.auth.signOut();
-    navigate("/", { replace: true });
-  };
 
   const today = new Date(new Date().toDateString());
   const upcoming = appointments.filter((a) => a.status !== "cancelled" && a.status !== "completed" && new Date(a.appointment_date) >= today);
@@ -144,9 +140,6 @@ const Dashboard = () => {
             )}
             <Button asChild variant="outline" className="bg-white/10 border-white/40 text-primary-foreground hover:bg-white/20 hover:text-primary-foreground">
               <Link to="/book"><CalendarPlus className="h-4 w-4" /> New</Link>
-            </Button>
-            <Button onClick={signOut} variant="outline" className="bg-white/10 border-white/40 text-primary-foreground hover:bg-white/20 hover:text-primary-foreground">
-              <LogOut className="h-4 w-4" />
             </Button>
           </div>
         </div>
