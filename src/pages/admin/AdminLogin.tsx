@@ -8,6 +8,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Eye, EyeOff, Loader2, ShieldCheck, Lock } from "lucide-react";
+import logo from "@/assets/logo.jpeg";
 import authBg from "@/assets/hero-auth.jpg";
 
 const AdminLogin = () => {
@@ -98,9 +99,14 @@ const AdminLogin = () => {
 
       <div className="relative w-full max-w-md">
         <div className="text-center mb-6 text-primary-foreground">
-          <span className="inline-flex items-center gap-2 px-3 py-1 text-xs font-semibold rounded-full bg-white/15 backdrop-blur mb-3">
-            <ShieldCheck className="h-3.5 w-3.5" /> Restricted Area
-          </span>
+          <div className="flex flex-col items-center gap-4 mb-6">
+            <div className="h-20 w-20 rounded-2xl bg-white shadow-elegant overflow-hidden p-2 flex items-center justify-center border border-white/20">
+              <img src={logo} alt="NOVA Eye Care Logo" className="h-full w-full object-contain" />
+            </div>
+            <span className="inline-flex items-center gap-2 px-3 py-1 text-xs font-semibold rounded-full bg-white/10 backdrop-blur tracking-widest uppercase">
+              <ShieldCheck className="h-3.5 w-3.5" /> Restricted Area
+            </span>
+          </div>
           <h1 className="text-3xl font-bold">Admin Portal</h1>
           <p className="text-sm opacity-90 mt-1">Authorized personnel only</p>
         </div>
