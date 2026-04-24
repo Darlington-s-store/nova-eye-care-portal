@@ -112,7 +112,7 @@ const AdminLogin = () => {
         </div>
 
         <Card className="p-7 shadow-elegant border-border/30 bg-card/95 backdrop-blur">
-          <Tabs value={tab} onValueChange={(v) => setTab(v as any)}>
+          <Tabs value={tab} onValueChange={(v) => setTab(v as "signin" | "signup")}>
             <TabsList className="grid grid-cols-2 w-full mb-6">
               <TabsTrigger value="signin">Sign In</TabsTrigger>
               <TabsTrigger value="signup">First-time Setup</TabsTrigger>
