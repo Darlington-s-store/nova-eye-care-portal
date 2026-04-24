@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Shield, Lock, Mail, User, Loader2, Save } from "lucide-react";
+import { Shield, Lock, Mail, User, Loader2, Save, Clock } from "lucide-react";
 
 const AdminSettings = () => {
   const [loading, setLoading] = useState(false);
