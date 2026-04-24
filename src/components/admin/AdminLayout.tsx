@@ -8,10 +8,18 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import {
   LayoutDashboard, CalendarDays, Users, Star, MessageSquare, BookOpen,
-  LogOut, Home as HomeIcon, ShieldCheck,
+  LogOut, Home as HomeIcon, ShieldCheck, Settings, User, ChevronDown
 } from "lucide-react";
 import logo from "@/assets/logo.jpeg";
 import { NotificationBell } from "@/components/NotificationBell";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const items = [
   { to: "/admin", label: "Overview", icon: LayoutDashboard, end: true },
@@ -94,14 +102,44 @@ export const AdminLayout = ({ children, title, subtitle }: AdminLayoutProps) => 
                 <ShieldCheck className="h-3.5 w-3.5 text-primary" /> Admin Console
               </div>
             </div>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-2">
               <NotificationBell audience="admin" />
-              <Button asChild variant="ghost" size="sm">
-                <Link to="/" className="gap-1"><HomeIcon className="h-4 w-4" /> <span className="hidden sm:inline">Site</span></Link>
-              </Button>
-              <Button onClick={signOut} variant="outline" size="sm">
-                <LogOut className="h-4 w-4" /> <span className="hidden sm:inline">Sign out</span>
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="gap-2 px-2 hover:bg-primary-soft h-10 rounded-full">
+                    <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20 shrink-0">
+                       <ShieldCheck className="h-4 w-4 text-primary" />
+                    </div>
+                    <span className="hidden sm:inline-block text-xs font-bold text-foreground/80">Admin</span>
+                    <ChevronDown className="h-3 w-3 opacity-50" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56 p-2 rounded-xl shadow-elegant border-border/40 backdrop-blur bg-card/95">
+                  <DropdownMenuLabel className="px-2 py-1.5 text-xs text-muted-foreground font-normal">
+                    Management Control
+                  </DropdownMenuLabel>
+                  <DropdownMenuItem asChild className="rounded-lg cursor-pointer focus:bg-primary-soft py-2.5">
+                    <Link to="/" className="flex items-center w-full">
+                      <HomeIcon className="mr-2 h-4 w-4 text-primary" />
+                      <span>View Website</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild className="rounded-lg cursor-pointer focus:bg-primary-soft py-2.5">
+                    <Link to="/admin/settings" className="flex items-center w-full">
+                      <Settings className="mr-2 h-4 w-4 text-primary" />
+                      <span>Admin Settings</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator className="my-2 bg-border/40" />
+                  <DropdownMenuItem 
+                    onClick={signOut}
+                    className="rounded-lg cursor-pointer focus:bg-red-50 text-red-600 focus:text-red-700 font-bold py-2.5"
+                  >
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Sign Out</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </header>
 
