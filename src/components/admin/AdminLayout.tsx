@@ -8,8 +8,9 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import {
   LayoutDashboard, CalendarDays, Users, Star, MessageSquare, BookOpen,
-  Eye, LogOut, Home as HomeIcon, ShieldCheck,
+  LogOut, Home as HomeIcon, ShieldCheck,
 } from "lucide-react";
+import logo from "@/assets/logo.jpeg";
 import { NotificationBell } from "@/components/NotificationBell";
 
 const items = [
@@ -31,10 +32,10 @@ const AdminSidebarInner = () => {
       <SidebarContent>
         <div className={`px-4 py-5 border-b border-sidebar-border ${collapsed ? "px-2" : ""}`}>
           <Link to="/admin" className="flex items-center gap-2 font-bold text-sidebar-primary">
-            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-hero-gradient text-primary-foreground shadow-card shrink-0">
-              <Eye className="h-5 w-5" />
+            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-white overflow-hidden shadow-card shrink-0 border border-border/10">
+              <img src={logo} alt="NOVA Eye Care Logo" className="h-full w-full object-contain p-0.5" />
             </span>
-            {!collapsed && <span className="text-sm leading-tight">NOVA <span className="block text-xs font-medium opacity-70">Admin</span></span>}
+            {!collapsed && <span className="text-sm leading-tight text-foreground">NOVA <span className="block text-[10px] font-bold text-primary uppercase tracking-widest opacity-80">Admin Center</span></span>}
           </Link>
         </div>
         <SidebarGroup>
