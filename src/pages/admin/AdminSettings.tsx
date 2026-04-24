@@ -12,6 +12,15 @@ const AdminSettings = () => {
   const [loading, setLoading] = useState(false);
   const [profile, setProfile] = useState({ full_name: "", email: "" });
   const [passwords, setPasswords] = useState({ current: "", new: "", confirm: "" });
+  const [clinic, setClinic] = useState({
+    id: "",
+    clinic_name: "",
+    contact_phone: "",
+    address: "",
+    announcement_title: "",
+    announcement_body: "",
+    show_announcement: false
+  });
 
   useEffect(() => {
     (async () => {
@@ -21,6 +30,11 @@ const AdminSettings = () => {
           full_name: user.user_metadata.full_name || "Admin User",
           email: user.email || "",
         });
+      }
+
+      const { data: settings } = await supabase.from("clinic_settings").select("*").single();
+      if (settings) {
+        setClinic(settings);
       }
     })();
   }, []);
@@ -34,6 +48,28 @@ const AdminSettings = () => {
     setLoading(false);
     if (error) toast.error(error.message);
     else toast.success("Profile updated successfully");
+  };
+
+  const handleUpdateClinic = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    const { error } = await supabase.from("clinic_settings").update({
+      clinic_name: clinic.clinic_name,
+      contact_phone: clinic.contact_phone,
+      address: clinic.address,
+      announcement_title: clinic.announcement_title,
+      announcement_body: clinic.announcement_body,
+      show_announcement: clinic.show_announcement
+    }).eq("id", clinic.id);
+    
+    setLoading(false);
+    if (error) toast.error(error.message);
+    else {
+      toast.success("Clinic settings updated");
+      if (clinic.show_announcement) {
+        toast.info("A notification has been broadcast to all users.");
+      }
+    }
   };
 
   const handleUpdatePassword = async (e: React.FormEvent) => {
@@ -55,14 +91,102 @@ const AdminSettings = () => {
   };
 
   return (
-    <AdminLayout title="Admin Settings" subtitle="Configure your administrative account and security.">
-      <div className="grid gap-6 max-w-4xl">
-        <section className="grid md:grid-cols-3 gap-6">
-          <div className="md:col-span-1">
-            <h2 className="text-lg font-semibold mb-1">Account Profile</h2>
-            <p className="text-sm text-muted-foreground">Update your administrative identity.</p>
+    <AdminLayout title="Admin Settings" subtitle="Configure your administrative account and clinic-wide settings.">
+      <div className="grid gap-8 max-w-5xl pb-12">
+        {/* Clinic Information Segment */}
+        <section className="grid lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-1">
+            <h2 className="text-lg font-bold flex items-center gap-2">
+              <Shield className="h-5 w-5 text-primary" />
+              Clinic Information
+            </h2>
+            <p className="text-sm text-muted-foreground mt-1">Manage global details that appear across the site and in patient emails.</p>
           </div>
-          <Card className="md:col-span-2 p-6 shadow-card">
+          <Card className="lg:col-span-2 p-6 shadow-elegant border-border/40">
+            <form onSubmit={handleUpdateClinic} className="space-y-4">
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Clinic Name</Label>
+                  <Input 
+                    value={clinic.clinic_name} 
+                    onChange={(e) => setClinic({ ...clinic, clinic_name: e.target.value })}
+                    placeholder="e.g. NOVA Eye Care"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Support Phone</Label>
+                  <Input 
+                    value={clinic.contact_phone} 
+                    onChange={(e) => setClinic({ ...clinic, contact_phone: e.target.value })}
+                    placeholder="+233..."
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>Clinic Address</Label>
+                <Input 
+                  value={clinic.address} 
+                  onChange={(e) => setClinic({ ...clinic, address: e.target.value })}
+                  placeholder="Street, City, Country"
+                />
+              </div>
+
+              <div className="pt-4 mt-4 border-t">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <Label className="text-base">Public Announcement</Label>
+                    <p className="text-xs text-muted-foreground">Broadcast an alert to all registered patients.</p>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <input 
+                      type="checkbox" 
+                      id="show_ann"
+                      className="h-4 w-4 accent-primary" 
+                      checked={clinic.show_announcement}
+                      onChange={(e) => setClinic({ ...clinic, show_announcement: e.target.checked })}
+                    />
+                    <Label htmlFor="show_ann" className="cursor-pointer">Active</Label>
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label className="text-xs">Announcement Title</Label>
+                    <Input 
+                      value={clinic.announcement_title} 
+                      onChange={(e) => setClinic({ ...clinic, announcement_title: e.target.value })}
+                      placeholder="e.g. Easter Holiday Notice"
+                      className="h-9"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs">Announcement Message</Label>
+                    <textarea 
+                      className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                      value={clinic.announcement_body} 
+                      onChange={(e) => setClinic({ ...clinic, announcement_body: e.target.value })}
+                      placeholder="Tell your patients something important..."
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <Button type="submit" disabled={loading} className="w-full sm:w-auto h-11 px-8 shadow-lg shadow-primary/10" variant="hero">
+                {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
+                Apply Clinic Settings
+              </Button>
+            </form>
+          </Card>
+        </section>
+
+        <section className="grid lg:grid-cols-3 gap-6 pt-8 border-t">
+          <div className="lg:col-span-1">
+            <h2 className="text-lg font-bold flex items-center gap-2">
+              <User className="h-5 w-5 text-primary" />
+              Admin Profile
+            </h2>
+            <p className="text-sm text-muted-foreground mt-1">Your personal identity in the admin center.</p>
+          </div>
+          <Card className="lg:col-span-2 p-6 shadow-elegant border-border/40">
             <form onSubmit={handleUpdateProfile} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="full_name">Full Name</Label>
