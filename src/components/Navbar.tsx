@@ -41,21 +41,24 @@ export const Navbar = () => {
     <header 
       className={`sticky top-0 z-50 w-full transition-all duration-500 ${
         scrolled 
-          ? "border-b border-border/60 bg-background/90 backdrop-blur-xl py-2 shadow-sm" 
-          : "bg-transparent py-4"
+          ? "border-b border-border/60 bg-background/90 backdrop-blur-xl py-3 shadow-md" 
+          : "bg-transparent py-5"
       }`}
     >
       <div className="container flex h-16 items-center justify-between gap-4">
-        <Link to="/" className="flex items-center gap-2.5 group">
+        <Link to="/" className="flex items-center gap-3 group">
           <motion.div 
             whileHover={{ scale: 1.05 }}
-            className="relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl bg-white shadow-card group-hover:shadow-glow transition-all duration-500 border border-border/10"
+            className="relative flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl bg-white shadow-card group-hover:shadow-glow transition-all duration-500 border border-border/10"
           >
             <img src={logo} alt="NOVA Eye Care Logo" className="h-full w-full object-contain" />
           </motion.div>
-          <span className="text-lg md:text-xl font-bold tracking-tight">
-            <span className="text-primary italic">NOVA</span> <span className="text-foreground font-semibold">Eye Care</span>
-          </span>
+          <div className="flex flex-col -space-y-1">
+            <span className="text-xl md:text-2xl font-bold tracking-tight">
+              <span className="text-primary italic">NOVA</span> <span className="text-foreground font-semibold">Eye Care</span>
+            </span>
+            <span className="text-[10px] md:text-[12px] uppercase tracking-[0.2em] font-bold text-muted-foreground/80 pl-0.5">Services</span>
+          </div>
         </Link>
 
         <nav className="hidden lg:flex items-center gap-1.5">
@@ -92,18 +95,18 @@ export const Navbar = () => {
         </div>
 
         <button
-          className="lg:hidden p-2 rounded-xl hover:bg-primary-soft transition-colors"
+          className="lg:hidden p-3 rounded-xl hover:bg-primary-soft transition-colors border border-border/40 bg-background/50 shadow-sm"
           onClick={() => setOpen((o) => !o)}
           aria-label="Toggle menu"
         >
           <AnimatePresence mode="wait">
             {open ? (
               <motion.div key="close" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }}>
-                <X className="h-6 w-6 text-primary" />
+                <X className="h-7 w-7 text-primary" />
               </motion.div>
             ) : (
               <motion.div key="open" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }}>
-                <Menu className="h-6 w-6 text-foreground" />
+                <Menu className="h-7 w-7 text-foreground" />
               </motion.div>
             )}
           </AnimatePresence>
