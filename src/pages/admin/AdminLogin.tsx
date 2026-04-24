@@ -129,7 +129,7 @@ const AdminLogin = () => {
             <div>
               <Label htmlFor="ai-pw" className="flex justify-between">
                 Password
-                <Link to="/forgot-password" size="sm" className="text-xs text-muted-foreground hover:text-primary transition-colors">Forgot?</Link>
+                <Link to="/forgot-password" className="text-xs text-muted-foreground hover:text-primary transition-colors">Forgot?</Link>
               </Label>
               <div className="relative mt-1.5">
                 <Input 
