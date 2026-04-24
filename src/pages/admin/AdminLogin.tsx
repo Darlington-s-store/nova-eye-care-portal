@@ -111,71 +111,51 @@ const AdminLogin = () => {
           <p className="text-sm opacity-90 mt-1">Authorized personnel only</p>
         </div>
 
-        <Card className="p-7 shadow-elegant border-border/30 bg-card/95 backdrop-blur">
-          <Tabs value={tab} onValueChange={(v) => setTab(v as "signin" | "signup")}>
-            <TabsList className="grid grid-cols-2 w-full mb-6">
-              <TabsTrigger value="signin">Sign In</TabsTrigger>
-              <TabsTrigger value="signup">First-time Setup</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="signin">
-              <form onSubmit={onSignIn} className="space-y-4">
-                <div>
-                  <Label htmlFor="ai-email">Admin Email</Label>
-                  <Input id="ai-email" type="email" required autoComplete="email"
-                    value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })}
-                    className="mt-1.5 h-11" />
-                </div>
-                <div>
-                  <Label htmlFor="ai-pw">Password</Label>
-                  <div className="relative mt-1.5">
-                    <Input id="ai-pw" type={show ? "text" : "password"} required autoComplete="current-password"
-                      value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })}
-                      className="h-11 pr-10" />
-                    <button type="button" onClick={() => setShow(!show)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground" aria-label="Toggle password">
-                      {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
-                  </div>
-                </div>
-                <Button type="submit" variant="hero" size="lg" className="w-full" disabled={loading}>
-                  {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Lock className="h-4 w-4" /> Sign in</>}
-                </Button>
-                <p className="text-center text-xs text-muted-foreground pt-1">
-                  <Link to="/forgot-password" className="hover:text-primary">Forgot password?</Link>
-                </p>
-              </form>
-            </TabsContent>
-
-            <TabsContent value="signup">
-              <div className="rounded-md bg-primary-soft p-3 text-xs text-primary mb-4">
-                Use this <strong>once</strong> to create the seeded admin account. The email{" "}
-                <strong>admin@novaeyecare.com</strong> is pre-authorized for admin access.
+        <Card className="p-7 md:p-8 shadow-elegant border-border/30 bg-card/95 backdrop-blur">
+          <form onSubmit={onSignIn} className="space-y-5">
+            <div>
+              <Label htmlFor="ai-email">Admin Email</Label>
+              <Input 
+                id="ai-email" 
+                type="email" 
+                required 
+                autoComplete="email"
+                placeholder="admin@novaeyecare.com"
+                value={form.email} 
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
+                className="mt-1.5 h-12 border-primary/20 focus:ring-primary/20" 
+              />
+            </div>
+            <div>
+              <Label htmlFor="ai-pw" className="flex justify-between">
+                Password
+                <Link to="/forgot-password" size="sm" className="text-xs text-muted-foreground hover:text-primary transition-colors">Forgot?</Link>
+              </Label>
+              <div className="relative mt-1.5">
+                <Input 
+                  id="ai-pw" 
+                  type={show ? "text" : "password"} 
+                  required 
+                  autoComplete="current-password"
+                  placeholder="••••••••"
+                  value={form.password} 
+                  onChange={(e) => setForm({ ...form, password: e.target.value })}
+                  className="h-12 border-primary/20 focus:ring-primary/20 pr-10" 
+                />
+                <button 
+                  type="button" 
+                  onClick={() => setShow(!show)} 
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors" 
+                  aria-label="Toggle password"
+                >
+                  {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
               </div>
-              <form onSubmit={onSignUp} className="space-y-4">
-                <div>
-                  <Label htmlFor="as-email">Admin Email</Label>
-                  <Input id="as-email" type="email" required value={form.email}
-                    onChange={(e) => setForm({ ...form, email: e.target.value })}
-                    className="mt-1.5 h-11" />
-                </div>
-                <div>
-                  <Label htmlFor="as-pw">Password</Label>
-                  <div className="relative mt-1.5">
-                    <Input id="as-pw" type={show ? "text" : "password"} required minLength={8} autoComplete="new-password"
-                      value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })}
-                      className="h-11 pr-10" placeholder="At least 8 characters" />
-                    <button type="button" onClick={() => setShow(!show)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground" aria-label="Toggle password">
-                      {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-1">Suggested: <code className="text-foreground">Admin@novacare</code></p>
-                </div>
-                <Button type="submit" variant="hero" size="lg" className="w-full" disabled={loading}>
-                  {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Create admin account"}
-                </Button>
-              </form>
-            </TabsContent>
-          </Tabs>
+            </div>
+            <Button type="submit" variant="hero" size="lg" className="w-full h-12 shadow-lg shadow-primary/20" disabled={loading}>
+              {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <><Lock className="h-4 w-4 mr-2" /> Sign into Dashboard</>}
+            </Button>
+          </form>
         </Card>
 
         <p className="text-center text-xs text-primary-foreground/80 mt-6">
