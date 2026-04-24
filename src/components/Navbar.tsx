@@ -1,11 +1,20 @@
-import { Link, NavLink, useLocation } from "react-router-dom";
+import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { Menu, X } from "lucide-react";
+import { Menu, X, LogOut, User, LayoutDashboard, ChevronDown } from "lucide-react";
 import logo from "@/assets/logo.jpeg";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import type { Session } from "@supabase/supabase-js";
 import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "sonner";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const links = [
   { to: "/", label: "Home" },
@@ -21,6 +30,7 @@ export const Navbar = () => {
   const [session, setSession] = useState<Session | null>(null);
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => setSession(data.session));
@@ -36,6 +46,17 @@ export const Navbar = () => {
   }, []);
 
   useEffect(() => { setOpen(false); }, [location.pathname]);
+
+  const handleLogout = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      toast.success("Signed out successfully");
+      navigate("/");
+    } catch (error: any) {
+      toast.error(error.message || "Error signing out");
+    }
+  };
 
   return (
     <header 
@@ -85,9 +106,44 @@ export const Navbar = () => {
 
         <div className="hidden lg:flex items-center gap-3">
           {session ? (
-            <Button asChild variant="ghost" className="font-bold hover:bg-primary-soft text-foreground/80"><Link to="/dashboard">Dashboard</Link></Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="font-bold hover:bg-primary-soft text-foreground/80 flex items-center gap-2 px-4 rounded-xl">
+                  <User className="h-4 w-4 text-primary" />
+                  <span>Account</span>
+                  <ChevronDown className="h-3 w-3 opacity-50" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56 p-2 rounded-xl shadow-elegant border-border/40 backdrop-blur bg-card/95">
+                <DropdownMenuLabel className="px-2 py-1.5 text-xs text-muted-foreground font-normal">
+                  Manage Account
+                </DropdownMenuLabel>
+                <DropdownMenuItem asChild className="rounded-lg cursor-pointer focus:bg-primary-soft">
+                  <Link to="/dashboard" className="flex items-center w-full">
+                    <LayoutDashboard className="mr-2 h-4 w-4 text-primary" />
+                    <span>Dashboard</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild className="rounded-lg cursor-pointer focus:bg-primary-soft">
+                  <Link to="/profile" className="flex items-center w-full">
+                    <User className="mr-2 h-4 w-4 text-primary" />
+                    <span>My Profile</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator className="my-2 bg-border/40" />
+                <DropdownMenuItem 
+                  onClick={handleLogout}
+                  className="rounded-lg cursor-pointer focus:bg-red-50 text-red-600 focus:text-red-700 font-medium"
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Sign Out</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           ) : (
-            <Button asChild variant="ghost" className="font-bold hover:bg-primary-soft text-foreground/80"><Link to="/auth">Sign in</Link></Button>
+            <Button asChild variant="ghost" className="font-bold hover:bg-primary-soft text-foreground/80 rounded-xl px-4">
+              <Link to="/auth">Sign in</Link>
+            </Button>
           )}
           <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
             <Button asChild variant="hero" className="rounded-xl px-7 font-bold shadow-lg shadow-primary/20"><Link to="/book">Book Now</Link></Button>
@@ -145,13 +201,38 @@ export const Navbar = () => {
                   </NavLink>
                 </motion.div>
               ))}
-              <motion.div variants={{ hidden: { y: 20, opacity: 0 }, show: { y: 0, opacity: 1 } }} className="flex gap-3 pt-4">
+              <motion.div variants={{ hidden: { y: 20, opacity: 0 }, show: { y: 0, opacity: 1 } }} className="flex flex-col gap-3 pt-4">
                 {session ? (
-                  <Button asChild variant="outline" className="flex-1 rounded-xl h-12 font-bold"><Link to="/dashboard">Dashboard</Link></Button>
+                  <>
+                    <Button asChild variant="outline" className="w-full rounded-xl h-12 font-bold justify-start px-5" onClick={() => setOpen(false)}>
+                      <Link to="/dashboard" className="flex items-center">
+                        <LayoutDashboard className="mr-2 h-4 w-4 text-primary" />
+                        Dashboard
+                      </Link>
+                    </Button>
+                    <Button asChild variant="outline" className="w-full rounded-xl h-12 font-bold justify-start px-5" onClick={() => setOpen(false)}>
+                      <Link to="/profile" className="flex items-center">
+                        <User className="mr-2 h-4 w-4 text-primary" />
+                        My Profile
+                      </Link>
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      className="w-full rounded-xl h-12 font-bold justify-start px-5 text-red-600 hover:text-red-700 hover:bg-red-50" 
+                      onClick={() => { handleLogout(); setOpen(false); }}
+                    >
+                      <LogOut className="mr-2 h-4 w-4" />
+                      Sign Out
+                    </Button>
+                  </>
                 ) : (
-                  <Button asChild variant="outline" className="flex-1 rounded-xl h-12 font-bold"><Link to="/auth">Sign in</Link></Button>
+                  <Button asChild variant="outline" className="w-full rounded-xl h-12 font-bold" onClick={() => setOpen(false)}>
+                    <Link to="/auth">Sign in</Link>
+                  </Button>
                 )}
-                <Button asChild variant="hero" className="flex-1 rounded-xl h-12 font-bold shadow-lg shadow-primary/20"><Link to="/book">Book Now</Link></Button>
+                <Button asChild variant="hero" className="w-full rounded-xl h-12 font-bold shadow-lg shadow-primary/20" onClick={() => setOpen(false)}>
+                  <Link to="/book">Book Now</Link>
+                </Button>
               </motion.div>
             </motion.div>
           </motion.div>
