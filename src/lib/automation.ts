@@ -18,6 +18,14 @@ type EmailData = {
   patientName: string;
 };
 
+interface AppointmentInfo {
+  full_name: string;
+  email: string;
+  service: string;
+  appointment_date: string;
+  appointment_time: string;
+}
+
 const sendEmail = async (data: EmailData) => {
   // SIMULATION: In a real app, this would hit a Supabase Edge Function connected to Resend
   console.log(`[EMAIL SENT TO ${data.to}] Subject: ${data.subject}`);
@@ -31,7 +39,7 @@ export const automation = {
   /**
    * Called when a patient successfully books an appointment
    */
-  onAppointmentBooked: async (appt: any) => {
+  onAppointmentBooked: async (appt: AppointmentInfo) => {
     await sendEmail({
       to: appt.email,
       patientName: appt.full_name,
@@ -43,7 +51,7 @@ export const automation = {
   /**
    * Called when an admin updates an appointment status
    */
-  onStatusUpdated: async (appt: any, newStatus: string) => {
+  onStatusUpdated: async (appt: AppointmentInfo, newStatus: string) => {
     const messages: Record<string, string> = {
       confirmed: `Great news! Your appointment for ${appt.service} on ${appt.appointment_date} has been CONFIRMED. We look forward to seeing you.`,
       completed: `Your visit for ${appt.service} on ${appt.appointment_date} is now marked as complete. Thank you for visiting Nova Eye Care. Please feel free to leave a review!`,

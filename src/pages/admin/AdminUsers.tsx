@@ -45,8 +45,9 @@ const AdminUsers = () => {
       }));
 
       setUsers(userList);
-    } catch (error: any) {
-      toast.error(error.message);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "An unexpected error occurred";
+      toast.error(message);
     } finally {
       setLoading(false);
     }
