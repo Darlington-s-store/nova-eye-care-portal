@@ -56,32 +56,36 @@ const Services = () => (
         variants={container}
         initial="hidden"
         animate="show"
-        className="grid gap-8 lg:grid-cols-2"
+        className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3"
       >
         {SERVICES.map((s) => {
           const sImage = SERVICE_IMAGES[s.slug] || s.image;
           return (
             <motion.div key={s.slug} variants={item}>
-              <Card id={s.slug} className="p-0 overflow-hidden hover:shadow-elegant transition-all duration-500 scroll-mt-24 border-border/60 group h-full flex flex-col md:flex-row rounded-[2rem]">
-                <div className="md:w-1/3 h-64 md:h-auto relative overflow-hidden">
+              <Card id={s.slug} className="p-0 overflow-hidden border-orange-50/10 hover:shadow-2xl transition-all duration-500 scroll-mt-24 group h-full flex flex-col rounded-[1.5rem] bg-white">
+                <div className="aspect-[16/10] relative overflow-hidden">
                   <img 
                     src={sImage} 
                     alt={s.name} 
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+                    className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" 
                     onError={(e) => { e.currentTarget.src = "/placeholder.svg"; }}
                   />
-                  <div className="absolute inset-0 bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 </div>
-                <div className="p-8 md:p-10 md:w-2/3 flex flex-col justify-between">
-                  <div>
-                    <h2 className="font-bold text-2xl text-foreground group-hover:text-primary transition-colors mb-4 tracking-tight">{s.name}</h2>
-                    <p className="text-muted-foreground mb-8 leading-relaxed text-base md:text-lg">{s.description}</p>
-                  </div>
-                  <div>
-                    <Button asChild variant="hero" size="lg" className="px-8 rounded-xl font-bold">
-                      <Link to={`/book?service=${s.slug}`}>Book this service</Link>
-                    </Button>
-                  </div>
+                <div className="p-8 flex flex-col flex-grow items-start">
+                  <h2 className="font-bold text-xl md:text-2xl text-foreground group-hover:text-primary transition-colors mb-3 tracking-tight">
+                    {s.name}
+                  </h2>
+                  <p className="text-muted-foreground/80 mb-6 leading-relaxed text-sm md:text-base line-clamp-3 flex-grow">
+                    {s.description}
+                  </p>
+                  <Link 
+                    to={`/book?service=${s.slug}`} 
+                    className="group/link flex items-center gap-2 text-primary font-bold text-sm hover:underline underline-offset-4"
+                  >
+                    Learn more
+                    <ArrowRight className="h-4 w-4 transition-transform group-hover/link:translate-x-1" />
+                  </Link>
                 </div>
               </Card>
             </motion.div>
