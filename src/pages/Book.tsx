@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { SERVICES, TIME_SLOTS_WEEKDAY, TIME_SLOTS_SATURDAY, CLINIC } from "@/lib/clinic";
 import { supabase } from "@/integrations/supabase/client";
 import { notifyAdmins, notifyUser } from "@/lib/notify";
+import { automation } from "@/lib/automation";
 import { CheckCircle2, CalendarCheck, Loader2, Clock, Phone, Mail, Sparkles, ShieldCheck, ArrowRight, ArrowLeft } from "lucide-react";
 import { z } from "zod";
 import { PageHero } from "@/components/PageHero";
@@ -127,6 +128,15 @@ const Book = () => {
           link: "/dashboard",
         });
       }
+      
+      // Trigger Automated Email
+      await automation.onAppointmentBooked({
+        full_name: parsed.data.full_name,
+        email: parsed.data.email,
+        service: parsed.data.service,
+        appointment_date: parsed.data.appointment_date,
+        appointment_time: parsed.data.appointment_time
+      });
     }
     setSubmitting(false);
     if (error) {

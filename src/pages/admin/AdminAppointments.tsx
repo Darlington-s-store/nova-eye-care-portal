@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -7,6 +8,7 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { notifyUser } from "@/lib/notify";
+import { automation } from "@/lib/automation";
 import { toast } from "sonner";
 import { Loader2, Search, CheckCircle2, X, Clock, Phone, Mail, Calendar } from "lucide-react";
 
@@ -32,6 +34,9 @@ const statusStyles: Record<string, string> = {
 };
 
 const AdminAppointments = () => {
+  const [searchParams] = useSearchParams();
+  const userIdFilter = searchParams.get("user");
+  
   const [items, setItems] = useState<Appt[]>([]);
   const [filter, setFilter] = useState<string>("all");
   const [q, setQ] = useState("");
@@ -66,10 +71,15 @@ const AdminAppointments = () => {
         link: "/dashboard",
       });
     }
+
+    // Trigger Automated Email
+    await automation.onStatusUpdated(a, status);
+
     toast.success(`Status updated to ${status}`);
   };
 
   const filtered = items.filter((a) => {
+    if (userIdFilter && a.user_id !== userIdFilter) return false;
     if (filter !== "all" && a.status !== filter) return false;
     if (q && !`${a.full_name} ${a.email} ${a.phone} ${a.service}`.toLowerCase().includes(q.toLowerCase())) return false;
     return true;
