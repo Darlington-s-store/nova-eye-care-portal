@@ -59,7 +59,7 @@ const Auth = () => {
 
   const onSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]).{8,}$/;
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?`~]).{8,}$/;
     if (!passwordRegex.test(signup.password)) {
       toast.error("Password must be at least 8 characters and include uppercase, lowercase, a number, and a special character.");
       return;
