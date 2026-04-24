@@ -17,6 +17,10 @@ const AdminSettings = () => {
     clinic_name: "",
     contact_phone: "",
     address: "",
+    opening_hours: "",
+    social_facebook: "",
+    social_instagram: "",
+    social_twitter: "",
     announcement_title: "",
     announcement_body: "",
     show_announcement: false
@@ -35,7 +39,12 @@ const AdminSettings = () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { data: settings } = await (supabase.from("clinic_settings" as any) as any).select("*").maybeSingle();
       if (settings) {
-        setClinic(settings);
+        setClinic({
+          ...settings,
+          social_facebook: settings.social_facebook || "",
+          social_instagram: settings.social_instagram || "",
+          social_twitter: settings.social_twitter || "",
+        });
       }
     })();
   }, []);
@@ -59,6 +68,10 @@ const AdminSettings = () => {
       clinic_name: clinic.clinic_name,
       contact_phone: clinic.contact_phone,
       address: clinic.address,
+      opening_hours: clinic.opening_hours,
+      social_facebook: clinic.social_facebook,
+      social_instagram: clinic.social_instagram,
+      social_twitter: clinic.social_twitter,
       announcement_title: clinic.announcement_title,
       announcement_body: clinic.announcement_body,
       show_announcement: clinic.show_announcement
@@ -69,7 +82,7 @@ const AdminSettings = () => {
     else {
       toast.success("Clinic settings updated");
       if (clinic.show_announcement) {
-        toast.info("A notification has been broadcast to all users.");
+        toast.info("Notification broadcasted successfully");
       }
     }
   };
@@ -100,19 +113,18 @@ const AdminSettings = () => {
           <div className="lg:col-span-1">
             <h2 className="text-lg font-bold flex items-center gap-2">
               <Shield className="h-5 w-5 text-primary" />
-              Clinic Information
+              Clinic & App Data
             </h2>
-            <p className="text-sm text-muted-foreground mt-1">Manage global details that appear across the site and in patient emails.</p>
+            <p className="text-sm text-muted-foreground mt-1">Manage global details and social presence.</p>
           </div>
           <Card className="lg:col-span-2 p-6 shadow-elegant border-border/40">
-            <form onSubmit={handleUpdateClinic} className="space-y-4">
+            <form onSubmit={handleUpdateClinic} className="space-y-6">
               <div className="grid sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Clinic Name</Label>
                   <Input 
                     value={clinic.clinic_name} 
                     onChange={(e) => setClinic({ ...clinic, clinic_name: e.target.value })}
-                    placeholder="e.g. NOVA Eye Care"
                   />
                 </div>
                 <div className="space-y-2">
@@ -120,20 +132,57 @@ const AdminSettings = () => {
                   <Input 
                     value={clinic.contact_phone} 
                     onChange={(e) => setClinic({ ...clinic, contact_phone: e.target.value })}
-                    placeholder="+233..."
                   />
                 </div>
               </div>
+
               <div className="space-y-2">
-                <Label>Clinic Address</Label>
-                <Input 
-                  value={clinic.address} 
-                  onChange={(e) => setClinic({ ...clinic, address: e.target.value })}
-                  placeholder="Street, City, Country"
-                />
+                <Label>Opening Hours</Label>
+                <div className="relative">
+                  <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input 
+                    className="pl-10"
+                    placeholder="e.g. Mon-Fri: 8am - 5pm, Sat: 9am - 2pm"
+                    value={clinic.opening_hours} 
+                    onChange={(e) => setClinic({ ...clinic, opening_hours: e.target.value })}
+                  />
+                </div>
               </div>
 
-              <div className="pt-4 mt-4 border-t">
+              <div className="space-y-4 pt-4 border-t">
+                <Label className="text-sm font-semibold">Social Media Links</Label>
+                <div className="grid sm:grid-cols-3 gap-3">
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground/50">FB</span>
+                    <Input 
+                      className="pl-9 text-xs" 
+                      placeholder="Facebook URL"
+                      value={clinic.social_facebook}
+                      onChange={(e) => setClinic({ ...clinic, social_facebook: e.target.value })}
+                    />
+                  </div>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground/50">IG</span>
+                    <Input 
+                      className="pl-9 text-xs" 
+                      placeholder="Instagram URL"
+                      value={clinic.social_instagram}
+                      onChange={(e) => setClinic({ ...clinic, social_instagram: e.target.value })}
+                    />
+                  </div>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground/50">X</span>
+                    <Input 
+                      className="pl-9 text-xs" 
+                      placeholder="Twitter URL"
+                      value={clinic.social_twitter}
+                      onChange={(e) => setClinic({ ...clinic, social_twitter: e.target.value })}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-4 border-t">
                 <div className="flex items-center justify-between mb-4">
                   <div>
                     <Label className="text-base">Public Announcement</Label>
