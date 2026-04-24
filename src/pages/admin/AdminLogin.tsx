@@ -36,7 +36,7 @@ const AdminLogin = () => {
     const { data, error } = await supabase.auth.signInWithPassword(form);
     if (error) {
       setLoading(false);
-      toast.error("Invalid admin credentials");
+      toast.error(error.message);
       return;
     }
     // Verify admin role
