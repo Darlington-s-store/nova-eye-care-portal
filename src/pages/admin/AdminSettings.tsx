@@ -32,7 +32,7 @@ const AdminSettings = () => {
         });
       }
 
-      const { data: settings } = await supabase.from("clinic_settings").select("*").single();
+      const { data: settings } = await (supabase.from("clinic_settings" as any) as any).select("*").maybeSingle();
       if (settings) {
         setClinic(settings);
       }
@@ -53,7 +53,7 @@ const AdminSettings = () => {
   const handleUpdateClinic = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const { error } = await supabase.from("clinic_settings").update({
+    const { error } = await (supabase.from("clinic_settings" as any) as any).update({
       clinic_name: clinic.clinic_name,
       contact_phone: clinic.contact_phone,
       address: clinic.address,
