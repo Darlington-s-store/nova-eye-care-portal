@@ -10,6 +10,23 @@ import {
   Clock, Award, HeartHandshake, Microscope, ArrowRight, CalendarCheck, Phone,
 } from "lucide-react";
 import heroHome from "@/assets/hero-home.jpg";
+import generalEye from "@/assets/General Eye.jpg";
+import contactLens from "@/assets/Contact Lens Services.jpg";
+import binocularVision from "@/assets/Binocular Vision Services.jpg";
+import lowVision from "@/assets/Low Vision and Vision Rehabilitation.jpg";
+import corporateEye from "@/assets/Corporate Eye Health Services.jpg";
+import publicEye from "@/assets/Public Eye Health Surveillance and Research.jpg";
+import dvlaImage from "@/assets/DVLA Eye Testing.jpg";
+
+const SERVICE_IMAGES: Record<string, string> = {
+  "general-eye-health": generalEye,
+  "contact-lens": contactLens,
+  "binocular-vision": binocularVision,
+  "low-vision": lowVision,
+  "corporate-eye-health": corporateEye,
+  "public-eye-health": publicEye,
+  "dvla": dvlaImage,
+};
 
 const ICONS = { Eye, CircleDot, Glasses, Sparkles, Building2, Users, Car };
 
@@ -56,7 +73,7 @@ const Home = () => (
           variants={containerVariants}
           initial="hidden"
           animate="visible"
-          className="max-w-3xl"
+          className="max-w-3xl mx-auto text-center"
         >
           <motion.span variants={itemVariants} className="inline-block px-3 py-1 text-xs font-semibold rounded-full bg-white/15 backdrop-blur mb-6 tracking-wide">
             OPTOMETRY CLINIC · GHANA
@@ -64,14 +81,14 @@ const Home = () => (
           <motion.h1 variants={itemVariants} className="text-4xl sm:text-5xl md:text-7xl font-extrabold leading-[1.1] mb-6 drop-shadow-sm">
             {CLINIC.name}
           </motion.h1>
-          <motion.p variants={itemVariants} className="text-2xl md:text-3xl font-light mb-6 opacity-95 flex items-center gap-3">
+          <motion.p variants={itemVariants} className="text-2xl md:text-3xl font-light mb-6 opacity-95 flex items-center justify-center gap-3">
             See Better <span className="h-0.5 w-12 bg-white/30" /> Live Brighter
           </motion.p>
-          <motion.p variants={itemVariants} className="text-base md:text-xl opacity-90 max-w-xl mb-10 leading-relaxed">
+          <motion.p variants={itemVariants} className="text-base md:text-xl opacity-90 max-w-xl mb-10 leading-relaxed mx-auto">
             Comprehensive eye care for every stage of life — from routine exams to specialty
             vision services and DVLA testing.
           </motion.p>
-          <motion.div variants={itemVariants} className="flex flex-wrap gap-4">
+          <motion.div variants={itemVariants} className="flex flex-wrap gap-4 justify-center">
             <Button asChild size="lg" className="bg-white text-primary hover:bg-white/90 shadow-elegant px-8 py-6 text-lg">
               <Link to="/book"><CalendarCheck className="h-5 w-5 mr-2" /> Book an Appointment</Link>
             </Button>
@@ -123,20 +140,29 @@ const Home = () => (
         className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
       >
         {SERVICES.map((s) => {
-          const Icon = ICONS[s.icon as keyof typeof ICONS];
+          const sImage = SERVICE_IMAGES[s.slug] || s.image;
           return (
             <motion.div key={s.slug} variants={itemVariants}>
               <Link to="/services" className="group block h-full">
-                <Card className="p-8 h-full hover:shadow-elegant transition-all duration-300 border-border/60 group-hover:border-primary/20 relative overflow-hidden">
-                  <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-bl-full -mr-12 -mt-12 transition-all group-hover:scale-150 group-hover:bg-primary/10" />
-                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary-soft text-primary mb-6 group-hover:bg-hero-gradient group-hover:text-primary-foreground transition-all duration-500 shadow-sm">
-                    <Icon className="h-7 w-7" />
+                <Card className="h-full hover:shadow-elegant transition-all duration-500 border-border/60 group-hover:border-primary/20 relative overflow-hidden flex flex-col rounded-3xl">
+                  <div className="h-48 overflow-hidden relative">
+                    <img 
+                      src={sImage} 
+                      alt={s.name} 
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                      onError={(e) => { e.currentTarget.src = "/placeholder.svg"; }}
+                    />
+                    <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors duration-300" />
                   </div>
-                  <h3 className="font-bold text-xl mb-3 group-hover:text-primary transition-colors">{s.name}</h3>
-                  <p className="text-sm text-muted-foreground mb-6 leading-relaxed">{s.short}</p>
-                  <span className="inline-flex items-center gap-2 text-sm text-primary font-bold">
-                    Learn more <ArrowRight className="h-4 w-4 group-hover:translate-x-2 transition-transform duration-300" />
-                  </span>
+                  <div className="p-8 flex-1 flex flex-col">
+                    <h3 className="font-bold text-xl mb-3 group-hover:text-primary transition-colors line-clamp-1">{s.name}</h3>
+                    <p className="text-sm text-muted-foreground mb-6 leading-relaxed flex-1 line-clamp-2">{s.short}</p>
+                    <div className="flex items-center justify-between">
+                      <span className="inline-flex items-center gap-2 text-sm text-primary font-bold">
+                        Learn more <ArrowRight className="h-4 w-4 group-hover:translate-x-2 transition-transform duration-300" />
+                      </span>
+                    </div>
+                  </div>
                 </Card>
               </Link>
             </motion.div>

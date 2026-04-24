@@ -12,7 +12,7 @@ interface PageHeroProps {
 
 export const PageHero = ({
   image, eyebrow, title, subtitle, children,
-  align = "left", size = "md",
+  align = "center", size = "md",
 }: PageHeroProps) => {
   const padding = size === "lg" ? "py-24 md:py-36" : "py-20 md:py-28";
   return (
@@ -35,7 +35,7 @@ export const PageHero = ({
             </span>
           )}
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold leading-tight mb-4">{title}</h1>
-          {subtitle && <p className="text-base md:text-lg opacity-95 max-w-xl">{subtitle}</p>}
+          {subtitle && <p className={`text-base md:text-lg opacity-95 max-w-xl ${align === "center" ? "mx-auto" : ""}`}>{subtitle}</p>}
           {children && <div className="mt-6">{children}</div>}
         </div>
       </div>
