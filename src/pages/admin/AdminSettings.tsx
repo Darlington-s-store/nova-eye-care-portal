@@ -23,7 +23,8 @@ const AdminSettings = () => {
     social_twitter: "",
     announcement_title: "",
     announcement_body: "",
-    show_announcement: false
+    show_announcement: false,
+    maintenance_mode: false
   });
 
   useEffect(() => {
