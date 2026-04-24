@@ -15,6 +15,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { NotificationBell } from "@/components/NotificationBell";
 
 const links = [
   { to: "/", label: "Home" },
@@ -106,6 +107,11 @@ export const Navbar = () => {
         </nav>
 
         <div className="hidden lg:flex items-center gap-3">
+          {session && (
+            <div className="mr-1">
+              <NotificationBell audience="user" />
+            </div>
+          )}
           {session ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -217,6 +223,12 @@ export const Navbar = () => {
                         My Profile
                       </Link>
                     </Button>
+                    <div className="px-4 py-2 border-y border-border/40 bg-muted/20 -mx-1 my-1">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Alerts</span>
+                        <NotificationBell audience="user" />
+                      </div>
+                    </div>
                     <Button 
                       variant="ghost" 
                       className="w-full rounded-xl h-12 font-bold justify-start px-5 text-red-600 hover:text-red-700 hover:bg-red-50" 
