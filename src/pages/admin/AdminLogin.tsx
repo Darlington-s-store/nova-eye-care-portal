@@ -16,7 +16,7 @@ const AdminLogin = () => {
   const [tab, setTab] = useState<"signin" | "signup">("signin");
   const [loading, setLoading] = useState(false);
   const [show, setShow] = useState(false);
-  const [form, setForm] = useState({ email: "admin@novaeyecare.com", password: "" });
+  const [form, setForm] = useState({ email: "", password: "" });
 
   useEffect(() => {
     const check = async () => {
