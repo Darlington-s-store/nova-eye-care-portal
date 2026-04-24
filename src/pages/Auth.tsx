@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { EyeOff, Loader2, ShieldCheck, CalendarCheck, Sparkles, Mail, ArrowLeft } from "lucide-react";
+import { Eye, EyeOff, Loader2, ShieldCheck, CalendarCheck, Sparkles, Mail, ArrowLeft } from "lucide-react";
 import logo from "@/assets/logo.jpeg";
 import {
   InputOTP,
