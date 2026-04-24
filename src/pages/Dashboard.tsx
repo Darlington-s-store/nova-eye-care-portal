@@ -13,7 +13,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { notifyAdmins, notifyUser } from "@/lib/notify";
 import { TIME_SLOTS_WEEKDAY, TIME_SLOTS_SATURDAY } from "@/lib/clinic";
 import { toast } from "sonner";
-import { NotificationBell } from "@/components/NotificationBell";
 import {
   CalendarPlus, CalendarX, Calendar, Clock, FileText, Loader2,
   User, Star, RefreshCw, ShieldCheck,
@@ -132,7 +131,6 @@ const Dashboard = () => {
             <h1 className="text-2xl md:text-3xl font-bold">{profile?.full_name || user?.email}</h1>
           </div>
           <div className="flex gap-2 items-center">
-            <NotificationBell audience="user" variant="light" />
             {isAdmin && (
               <Button asChild variant="outline" className="bg-white/10 border-white/40 text-primary-foreground hover:bg-white/20 hover:text-primary-foreground">
                 <Link to="/admin"><ShieldCheck className="h-4 w-4" /> Admin</Link>
