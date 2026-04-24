@@ -10,13 +10,13 @@ import {
   Clock, Award, HeartHandshake, Microscope, ArrowRight, CalendarCheck, Phone,
 } from "lucide-react";
 import heroHome from "@/assets/hero-home.jpg";
-import generalEye from "@/assets/General Eye.jpg";
-import contactLens from "@/assets/Contact Lens Services.jpg";
-import binocularVision from "@/assets/Binocular Vision Services.jpg";
-import lowVision from "@/assets/Low Vision and Vision Rehabilitation.jpg";
-import corporateEye from "@/assets/Corporate Eye Health Services.jpg";
-import publicEye from "@/assets/Public Eye Health Surveillance and Research.jpg";
-import dvlaImage from "@/assets/DVLA Eye Testing.jpg";
+import generalEye from "@/assets/general-eye.jpg";
+import contactLens from "@/assets/contact-lens-services.jpg";
+import binocularVision from "@/assets/binocular-vision-services.jpg";
+import lowVision from "@/assets/low-vision-rehabilitation.jpg";
+import corporateEye from "@/assets/corporate-eye-health-services.jpg";
+import publicEye from "@/assets/public-eye-health.jpg";
+import dvlaImage from "@/assets/dvla-eye-testing.jpg";
 
 const SERVICE_IMAGES: Record<string, string> = {
   "general-eye-health": generalEye,

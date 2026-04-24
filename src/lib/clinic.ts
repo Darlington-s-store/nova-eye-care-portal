@@ -5,7 +5,7 @@ export const SERVICES = [
     short: "Comprehensive eye exams, vision testing, and prescription eyewear.",
     description:
       "Our general eye health service includes a complete eye examination, refraction, intraocular pressure measurement, and ocular health assessment. We diagnose and manage refractive errors, dry eyes, allergies, and common eye conditions. Ideal for adults and children seeking routine eye care or new prescription glasses.",
-    image: "/services/general-eye-health.jpg",
+    image: "/services/general-eye.jpg",
   },
   {
     slug: "contact-lens",
@@ -13,7 +13,7 @@ export const SERVICES = [
     short: "Fitting, training, and follow-up for soft and specialty contact lenses.",
     description:
       "We offer professional contact lens fitting for daily, monthly, toric, multifocal, and specialty lenses. Our optometrists guide you through insertion, removal, and proper care to ensure comfort and eye health. Suitable for first-time wearers and patients who need an updated fit.",
-    image: "/services/contact-lens.jpg",
+    image: "/services/contact-lens-services.jpg",
   },
   {
     slug: "binocular-vision",
@@ -21,7 +21,7 @@ export const SERVICES = [
     short: "Diagnosis and therapy for eye coordination and focusing problems.",
     description:
       "This service evaluates how your eyes work together. We assess and treat issues like convergence insufficiency, strabismus, amblyopia, and reading difficulties through vision therapy. Beneficial for children with learning challenges and adults with eye strain or double vision.",
-    image: "/services/binocular-vision.jpg",
+    image: "/services/binocular-vision-services.jpg",
   },
   {
     slug: "low-vision",
@@ -29,7 +29,7 @@ export const SERVICES = [
     short: "Specialized care and devices for people with reduced vision.",
     description:
       "We help patients with permanent visual impairment maximize their remaining sight using magnifiers, telescopes, and adaptive techniques. Our rehabilitation plans support independence in reading, mobility, and daily activities. Recommended for patients with macular degeneration, diabetic retinopathy, or congenital low vision.",
-    image: "/services/low-vision.jpg",
+    image: "/services/low-vision-rehabilitation.jpg",
   },
   {
     slug: "corporate-eye-health",
@@ -37,7 +37,7 @@ export const SERVICES = [
     short: "On-site and in-clinic eye care packages for organizations.",
     description:
       "We partner with companies to provide screening, full eye exams, and digital eye strain management for employees. Packages include on-site visits, group reports, and discounted eyewear. Ideal for organizations that want to safeguard staff productivity and well-being.",
-    image: "/services/corporate-eye-health.jpg",
+    image: "/services/corporate-eye-health-services.jpg",
   },
   {
     slug: "public-eye-health",
@@ -53,7 +53,7 @@ export const SERVICES = [
     short: "Official DVLA-compliant eye tests for drivers.",
     description:
       "We provide DVLA-compliant visual acuity and field-of-vision tests required for driver's license applications and renewals. Results are documented on the official DVLA form for submission. Required for new drivers, license renewals, and commercial vehicle operators.",
-    image: "/services/dvla.jpg",
+    image: "/services/dvla-eye-testing.jpg",
   },
 ] as const;
 
