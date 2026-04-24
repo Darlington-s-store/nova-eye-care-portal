@@ -1,14 +1,15 @@
 import { Link } from "react-router-dom";
-import { Eye, Mail, Phone, MapPin } from "lucide-react";
+import { Mail, Phone, MapPin } from "lucide-react";
+import logo from "@/assets/logo.jpeg";
 import { CLINIC } from "@/lib/clinic";
 
 export const Footer = () => (
   <footer className="border-t border-border bg-secondary/40 mt-20">
     <div className="container py-12 grid gap-8 md:grid-cols-4">
       <div className="md:col-span-2">
-        <Link to="/" className="flex items-center gap-2 font-bold text-primary mb-3">
-          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-hero-gradient text-primary-foreground">
-            <Eye className="h-5 w-5" />
+        <Link to="/" className="flex items-center gap-3 font-bold text-primary mb-3">
+          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white overflow-hidden shadow-elegant">
+            <img src={logo} alt="NOVA Eye Care Logo" className="h-full w-full object-contain p-1" />
           </span>
           <span>NOVA Eye Care Services</span>
         </Link>

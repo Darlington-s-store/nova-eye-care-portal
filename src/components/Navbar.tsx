@@ -1,6 +1,7 @@
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { Menu, X, Eye } from "lucide-react";
+import { Menu, X } from "lucide-react";
+import logo from "@/assets/logo.jpeg";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import type { Session } from "@supabase/supabase-js";
@@ -46,14 +47,14 @@ export const Navbar = () => {
     >
       <div className="container flex h-16 items-center justify-between gap-4">
         <Link to="/" className="flex items-center gap-2.5 group">
-          <motion.span 
-            whileHover={{ rotate: 10, scale: 1.1 }}
-            className="flex h-10 w-10 items-center justify-center rounded-xl bg-hero-gradient text-primary-foreground shadow-card group-hover:shadow-glow transition-shadow duration-500"
+          <motion.div 
+            whileHover={{ scale: 1.05 }}
+            className="relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl bg-white shadow-card group-hover:shadow-glow transition-all duration-500 border border-border/10"
           >
-            <Eye className="h-6 w-6" />
-          </motion.span>
+            <img src={logo} alt="NOVA Eye Care Logo" className="h-full w-full object-contain" />
+          </motion.div>
           <span className="text-lg md:text-xl font-bold tracking-tight">
-            <span className="text-primary italic">NOVA</span> <span className="text-foreground">Eye Care</span>
+            <span className="text-primary italic">NOVA</span> <span className="text-foreground font-semibold">Eye Care</span>
           </span>
         </Link>
 

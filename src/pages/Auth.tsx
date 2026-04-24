@@ -7,7 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Eye, EyeOff, Loader2, ShieldCheck, CalendarCheck, Sparkles, Mail, ArrowLeft } from "lucide-react";
+import { EyeOff, Loader2, ShieldCheck, CalendarCheck, Sparkles, Mail, ArrowLeft } from "lucide-react";
+import logo from "@/assets/logo.jpeg";
 import {
   InputOTP,
   InputOTPGroup,
@@ -137,9 +138,9 @@ const Auth = () => {
         <div className="absolute inset-0 bg-hero-gradient opacity-90" />
         <div className="absolute inset-0 [background-image:radial-gradient(circle_at_30%_30%,white_1px,transparent_1px)] [background-size:36px_36px] opacity-10" />
         <div className="relative z-10 max-w-md space-y-6 animate-fade-in-up">
-          <Link to="/" className="inline-flex items-center gap-2 font-bold text-xl">
-            <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/15 backdrop-blur">
-              <Eye className="h-6 w-6" />
+          <Link to="/" className="inline-flex items-center gap-3 font-bold text-xl">
+            <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-white overflow-hidden shadow-elegant">
+              <img src={logo} alt="NOVA Eye Care Logo" className="h-full w-full object-contain p-1" />
             </span>
             NOVA Eye Care
           </Link>
@@ -177,9 +178,9 @@ const Auth = () => {
         />
         <div className="relative w-full max-w-md">
           <div className="lg:hidden text-center mb-6">
-            <Link to="/" className="inline-flex items-center gap-2 text-primary font-bold text-lg">
-              <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-hero-gradient text-primary-foreground">
-                <Eye className="h-5 w-5" />
+            <Link to="/" className="inline-flex items-center gap-3 text-primary font-bold text-xl">
+              <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-white overflow-hidden shadow-elegant">
+                <img src={logo} alt="NOVA Eye Care Logo" className="h-full w-full object-contain p-1" />
               </span>
               NOVA Eye Care
             </Link>
