@@ -32,6 +32,7 @@ const AdminSettings = () => {
         });
       }
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { data: settings } = await (supabase.from("clinic_settings" as any) as any).select("*").maybeSingle();
       if (settings) {
         setClinic(settings);
@@ -53,6 +54,7 @@ const AdminSettings = () => {
   const handleUpdateClinic = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { error } = await (supabase.from("clinic_settings" as any) as any).update({
       clinic_name: clinic.clinic_name,
       contact_phone: clinic.contact_phone,
