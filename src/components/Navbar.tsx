@@ -53,8 +53,9 @@ export const Navbar = () => {
       if (error) throw error;
       toast.success("Signed out successfully");
       navigate("/");
-    } catch (error: any) {
-      toast.error(error.message || "Error signing out");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Error signing out";
+      toast.error(message);
     }
   };
 
