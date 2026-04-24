@@ -59,7 +59,11 @@ const Auth = () => {
 
   const onSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (signup.password.length < 6) { toast.error("Password must be at least 6 characters"); return; }
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]).{8,}$/;
+    if (!passwordRegex.test(signup.password)) {
+      toast.error("Password must be at least 8 characters and include uppercase, lowercase, a number, and a special character.");
+      return;
+    }
     setLoading(true);
     const { data, error } = await supabase.auth.signUp({
       email: signup.email,
@@ -282,9 +286,9 @@ const Auth = () => {
                     <div>
                       <Label htmlFor="su-pw">Password</Label>
                       <div className="relative mt-1.5">
-                        <Input id="su-pw" type={showPw ? "text" : "password"} required minLength={6}
+                        <Input id="su-pw" type={showPw ? "text" : "password"} required minLength={8}
                           autoComplete="new-password"
-                          placeholder="At least 6 characters"
+                          placeholder="Uppercase, lowercase, number, symbol"
                           value={signup.password}
                           onChange={(e) => setSignup({ ...signup, password: e.target.value })}
                           className="h-11 pr-10" />
