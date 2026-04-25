@@ -86,8 +86,8 @@ const Auth = () => {
     }
     // With auto-confirm enabled, the user is signed in immediately
     if (data.session) {
-      toast.success(`Welcome, ${signup.full_name.split(" ")[0]}! Your account is ready.`);
-      navigate("/dashboard");
+      toast.success(`Welcome, ${signup.full_name.split(" ")[0]}! Please complete your registration.`);
+      navigate("/register-patient");
     } else {
       // Confirmation required
       const email = signup.email;
@@ -118,7 +118,7 @@ const Auth = () => {
 
     if (data.session) {
       toast.success("Account verified successfully!");
-      navigate("/dashboard");
+      navigate("/register-patient");
     }
     setLoading(false);
   };

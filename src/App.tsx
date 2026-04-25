@@ -28,6 +28,7 @@ import AdminNotifications from "./pages/admin/AdminNotifications.tsx";
 import AdminChatbot from "./pages/admin/AdminChatbot.tsx";
 import AdminSettings from "./pages/admin/AdminSettings.tsx";
 import AdminServices from "./pages/admin/AdminServices.tsx";
+import RegisterPatient from "./pages/RegisterPatient.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -108,6 +109,7 @@ const App = () => (
 
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+          <Route path="/register-patient" element={<ProtectedRoute><RegisterPatient /></ProtectedRoute>} />
 
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin" element={<ProtectedRoute requireAdmin><AdminOverview /></ProtectedRoute>} />

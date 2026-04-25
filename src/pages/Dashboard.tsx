@@ -15,7 +15,7 @@ import { TIME_SLOTS_WEEKDAY, TIME_SLOTS_SATURDAY } from "@/lib/clinic";
 import { toast } from "sonner";
 import {
   CalendarPlus, CalendarX, Calendar, Clock, FileText, Loader2,
-  User, Star, RefreshCw, ShieldCheck,
+  User, Star, RefreshCw, ShieldCheck, ArrowRight
 } from "lucide-react";
 
 type Appointment = {
@@ -28,7 +28,12 @@ type Appointment = {
   created_at: string;
 };
 
-type Profile = { full_name: string | null; phone: string | null; email: string | null };
+type Profile = { 
+  full_name: string | null; 
+  phone: string | null; 
+  email: string | null;
+  registration_completed: boolean | null;
+};
 
 const statusStyles: Record<Appointment["status"], string> = {
   pending: "bg-yellow-100 text-yellow-900 hover:bg-yellow-100",
@@ -53,7 +58,8 @@ const Dashboard = () => {
       setLoading(true);
       const [{ data: appts }, { data: prof }] = await Promise.all([
         supabase.from("appointments").select("*").eq("user_id", user.id).order("appointment_date", { ascending: false }),
-        supabase.from("profiles").select("full_name, phone, email").eq("id", user.id).single(),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (supabase as any).from("profiles").select("full_name, phone, email, registration_completed").eq("id", user.id).single(),
       ]);
       setAppointments((appts as Appointment[]) || []);
       setProfile(prof as Profile);
@@ -142,6 +148,30 @@ const Dashboard = () => {
           </div>
         </div>
       </section>
+
+      {!loading && profile && !profile.registration_completed && (
+        <section className="container mt-8 animate-fade-in">
+          <Card className="p-6 bg-amber-50 border-amber-100 border-2 rounded-[2rem] shadow-lg shadow-amber-900/5 relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-amber-200/20 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl group-hover:bg-amber-200/40 transition-colors" />
+            <div className="flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
+              <div className="flex items-center gap-4">
+                <div className="h-14 w-14 bg-amber-100 rounded-2xl flex items-center justify-center text-amber-700 shadow-inner">
+                  <User className="h-7 w-7" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-amber-900">Complete Your Patient Profile</h2>
+                  <p className="text-amber-700/80 text-sm max-w-md">
+                    Finish your registration to help our clinical team provide you with the best possible personalized care.
+                  </p>
+                </div>
+              </div>
+              <Button asChild size="lg" className="bg-amber-600 hover:bg-amber-700 text-white rounded-xl px-8 font-bold gap-2 w-full md:w-auto shadow-lg shadow-amber-600/20">
+                <Link to="/register-patient">Finish Registration <ArrowRight className="h-4 w-4" /></Link>
+              </Button>
+            </div>
+          </Card>
+        </section>
+      )}
 
       <section className="container py-10 grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-1 space-y-4">
