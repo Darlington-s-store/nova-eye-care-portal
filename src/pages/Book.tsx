@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import { Layout } from "@/components/Layout";
 import { Button } from "@/components/ui/button";
@@ -54,15 +54,22 @@ const Book = () => {
   const [services, setServices] = useState<{name: string, slug: string, short: string}[]>([]);
   const [loadingServices, setLoadingServices] = useState(true);
 
+  const update = useCallback((k: keyof typeof form, v: string) => {
+    setForm((f) => ({ ...f, [k]: v }));
+    setErrors((e) => ({ ...e, [k]: "" }));
+  }, []);
+
   useEffect(() => {
     const fetchServices = async () => {
-      const { data } = await supabase
-        .from("services" as any)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data } = await (supabase as any)
+        .from("services")
         .select("name, slug, short_description")
         .order("display_order", { ascending: true });
       
       if (data) {
-        setServices(data.map(s => ({ 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        setServices((data as any[]).map(s => ({ 
           name: s.name, 
           slug: s.slug, 
           short: s.short_description 
@@ -73,30 +80,29 @@ const Book = () => {
     fetchServices();
   }, []);
 
-  const update = (k: keyof typeof form, v: string) => {
-    setForm((f) => ({ ...f, [k]: v }));
-    setErrors((e) => ({ ...e, [k]: "" }));
-  };
-
   useEffect(() => {
     if (!loadingServices && presetSlug) {
       const found = services.find(s => s.slug === presetSlug);
       if (found) update("service", found.name);
     }
-  }, [loadingServices, presetSlug, services]);
+  }, [loadingServices, presetSlug, services, update]);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
       if (data.user) {
         setUserId(data.user.id);
-        supabase.from("profiles").select("full_name, phone, email").eq("id", data.user.id).single()
-          .then(({ data: p }) => {
-            if (p) setForm((f) => ({
-              ...f,
-              full_name: f.full_name || p.full_name || "",
-              phone: f.phone || p.phone || "",
-              email: f.email || p.email || data.user!.email || "",
-            }));
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (supabase as any).from("profiles").select("full_name, phone, email").eq("id", data.user.id).single()
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          .then(({ data: p }: { data: any }) => {
+            if (p) {
+              setForm((f) => ({
+                ...f,
+                full_name: f.full_name || p.full_name || "",
+                phone: f.phone || p.phone || "",
+                email: f.email || p.email || data.user!.email || "",
+              }));
+            }
           });
       }
     });
@@ -106,11 +112,6 @@ const Book = () => {
   const isSaturday = dayOfWeek === 6;
   const isSunday = dayOfWeek === 0;
   const slots = isSaturday ? TIME_SLOTS_SATURDAY : TIME_SLOTS_WEEKDAY;
-
-  const update = (k: keyof typeof form, v: string) => {
-    setForm((f) => ({ ...f, [k]: v }));
-    setErrors((e) => ({ ...e, [k]: "" }));
-  };
 
   const minDate = new Date().toISOString().split("T")[0];
 

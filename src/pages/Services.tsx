@@ -38,8 +38,9 @@ const Services = () => {
 
   useEffect(() => {
     const fetchServices = async () => {
-      const { data, error } = await supabase
-        .from("services" as any)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data, error } = await (supabase as any)
+        .from("services")
         .select("id, slug, name, short_description, image_url, display_order")
         .order("display_order", { ascending: true });
       
