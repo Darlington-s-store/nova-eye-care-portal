@@ -29,7 +29,7 @@ const AdminNotifications = () => {
 
   useEffect(() => {
     load();
-    const ch = supabase.channel("admin-notifs").on("postgres_changes", { event: "*", schema: "public", table: "notifications", filter: "audience=eq.admin" }, load).subscribe();
+    const ch = supabase.channel(`admin-notifs-${crypto.randomUUID()}`).on("postgres_changes", { event: "*", schema: "public", table: "notifications", filter: "audience=eq.admin" }, load).subscribe();
     return () => { supabase.removeChannel(ch); };
   }, []);
 

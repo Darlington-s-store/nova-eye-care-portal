@@ -37,16 +37,35 @@ const MaintenanceManager = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     const check = async () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data } = await (supabase.from("clinic_settings" as any) as any).select("maintenance_mode").maybeSingle();
-      setMaintenance(data?.maintenance_mode ?? false);
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { data } = await (supabase.from("clinic_settings" as any) as any)
+          .select("maintenance_mode")
+          .limit(1);
+        
+        if (data && data.length > 0) {
+          const isMaint = !!data[0].maintenance_mode;
+          console.log("Maintenance mode check:", isMaint);
+          setMaintenance(isMaint);
+        } else {
+          setMaintenance(false);
+        }
+      } catch (e) {
+        console.error("Failed to check maintenance mode:", e);
+        setMaintenance(false);
+      }
     };
     check();
 
     // Subscribe to changes
-    const sub = supabase.channel('maintenance')
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'clinic_settings' }, (payload) => {
-        setMaintenance(payload.new.maintenance_mode);
+    const sub = supabase.channel(`maintenance-channel-${Date.now()}`)
+      .on('postgres_changes', { 
+        event: 'UPDATE', 
+        schema: 'public', 
+        table: 'clinic_settings' 
+      }, (payload) => {
+        console.log("Maintenance mode updated via Realtime:", payload.new.maintenance_mode);
+        setMaintenance(!!payload.new.maintenance_mode);
       })
       .subscribe();
     

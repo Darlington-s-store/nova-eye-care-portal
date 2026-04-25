@@ -40,8 +40,9 @@ export const NotificationBell = ({ audience, variant = "default" }: Props) => {
     };
     load();
 
+    const channelId = `notifications:${audience}-${Date.now()}`;
     const channel = supabase
-      .channel(`notifications:${audience}`)
+      .channel(channelId)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "notifications", filter: `audience=eq.${audience}` },

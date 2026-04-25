@@ -51,7 +51,7 @@ const AdminAppointments = () => {
 
   useEffect(() => {
     load();
-    const ch = supabase.channel("admin-appts").on("postgres_changes", { event: "*", schema: "public", table: "appointments" }, load).subscribe();
+    const ch = supabase.channel(`admin-appts-${crypto.randomUUID()}`).on("postgres_changes", { event: "*", schema: "public", table: "appointments" }, load).subscribe();
     return () => { supabase.removeChannel(ch); };
   }, []);
 

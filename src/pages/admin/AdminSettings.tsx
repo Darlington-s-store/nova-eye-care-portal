@@ -38,7 +38,8 @@ const AdminSettings = () => {
       }
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data: settings } = await (supabase.from("clinic_settings" as any) as any).select("*").maybeSingle();
+      const { data: settingsList } = await (supabase.from("clinic_settings" as any) as any).select("*").limit(1);
+      const settings = settingsList && settingsList.length > 0 ? settingsList[0] : null;
       if (settings) {
         setClinic({
           ...settings,
@@ -63,6 +64,10 @@ const AdminSettings = () => {
 
   const handleUpdateClinic = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!clinic.id) {
+      toast.error("Settings not loaded correctly. Please refresh the page.");
+      return;
+    }
     setLoading(true);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { error } = await (supabase.from("clinic_settings" as any) as any).update({
@@ -75,16 +80,14 @@ const AdminSettings = () => {
       social_twitter: clinic.social_twitter,
       announcement_title: clinic.announcement_title,
       announcement_body: clinic.announcement_body,
-      show_announcement: clinic.show_announcement
+      show_announcement: clinic.show_announcement,
+      maintenance_mode: clinic.maintenance_mode
     }).eq("id", clinic.id);
     
     setLoading(false);
     if (error) toast.error(error.message);
     else {
       toast.success("Clinic settings updated");
-      if (clinic.show_announcement) {
-        toast.info("Notification broadcasted successfully");
-      }
     }
   };
 
