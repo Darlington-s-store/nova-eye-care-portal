@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, Edit2, Trash2, Loader2, Save, X, Image as ImageIcon, ArrowRight, LayoutGrid, List, Eye } from "lucide-react";
+import { Plus, Edit2, Trash2, Loader2, Save, X, Image as ImageIcon, ArrowRight, LayoutGrid, List, Eye, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
@@ -26,6 +26,7 @@ export default function AdminServices() {
   const [editing, setEditing] = useState<Service | null>(null);
   const [isNew, setIsNew] = useState(false);
   const [viewMode, setViewMode] = useState<"grid" | "list">("list");
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     fetchServices();
@@ -167,13 +168,66 @@ export default function AdminServices() {
 
                   <div className="grid sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <label className="text-sm font-bold ml-1">Banner Image URL</label>
-                      <Input 
-                        value={editing.image_url} 
-                        onChange={(e) => setEditing({ ...editing, image_url: e.target.value })}
-                        placeholder="https://..."
-                        className="h-12 rounded-xl border-border/60"
-                      />
+                      <label className="text-sm font-bold ml-1 flex justify-between items-center">
+                        Banner Image
+                        {uploading && <Loader2 className="h-3 w-3 animate-spin text-primary" />}
+                      </label>
+                      <div className="flex gap-2">
+                        <div className="relative flex-1">
+                          <Input 
+                            value={editing.image_url} 
+                            onChange={(e) => setEditing({ ...editing, image_url: e.target.value })}
+                            placeholder="https://..."
+                            className="h-12 rounded-xl border-border/60 pr-10"
+                          />
+                          <ImageIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground opacity-40" />
+                        </div>
+                        <div className="relative">
+                          <Button 
+                            variant="secondary" 
+                            className="h-12 rounded-xl h-12 w-12 p-0" 
+                            disabled={uploading}
+                            asChild
+                          >
+                            <label className="cursor-pointer">
+                              {uploading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Upload className="h-5 w-5" />}
+                              <input 
+                                type="file" 
+                                className="hidden" 
+                                accept="image/*" 
+                                onChange={async (e) => {
+                                  const file = e.target.files?.[0];
+                                  if (!file) return;
+                                  
+                                  try {
+                                    setUploading(true);
+                                    const fileExt = file.name.split('.').pop();
+                                    const fileName = `${editing.slug || 'service'}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+                                    const filePath = `${fileName}`;
+
+                                    const { error: uploadError } = await supabase.storage
+                                      .from('services')
+                                      .upload(filePath, file);
+
+                                    if (uploadError) throw uploadError;
+
+                                    const { data: { publicUrl } } = supabase.storage
+                                      .from('services')
+                                      .getPublicUrl(filePath);
+
+                                    setEditing({ ...editing, image_url: publicUrl });
+                                    toast.success("Image uploaded successfully");
+                                  } catch (error: any) {
+                                    toast.error(`Upload failed: ${error.message}`);
+                                  } finally {
+                                    setUploading(false);
+                                  }
+                                }} 
+                              />
+                            </label>
+                          </Button>
+                        </div>
+                      </div>
                     </div>
                     <div className="space-y-2">
                       <label className="text-sm font-bold ml-1">Sort Priority</label>
