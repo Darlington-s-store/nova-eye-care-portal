@@ -72,14 +72,17 @@ const MaintenanceManager = ({ children }: { children: React.ReactNode }) => {
     return () => { supabase.removeChannel(sub); };
   }, []);
 
-  if (maintenance === null) return null; // Wait for first check
+  if (maintenance === null) return null;
   
   const isAdminPath = location.pathname.startsWith("/admin");
-  if (maintenance && !isAdminPath) {
-    return <Maintenance />;
-  }
-
-  return <>{children}</>;
+  
+  // Using a stable fragment container prevents DOM nodes from being "orphaned" 
+  // during the abrupt switch to Maintenance mode, fixing the removeChild error.
+  return (
+    <>
+      {maintenance && !isAdminPath ? <Maintenance /> : children}
+    </>
+  );
 };
 
 const App = () => (
