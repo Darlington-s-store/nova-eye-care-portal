@@ -38,12 +38,11 @@ const stepVariants = {
 const Book = () => {
   const [searchParams] = useSearchParams();
   const presetSlug = searchParams.get("service");
-  const presetService = SERVICES.find((s) => s.slug === presetSlug)?.name ?? "";
 
   const [step, setStep] = useState(0);
   const [form, setForm] = useState({
     full_name: "", phone: "", email: "",
-    service: presetService,
+    service: "",
     appointment_date: "", appointment_time: "",
     notes: "",
   });
@@ -51,6 +50,40 @@ const Book = () => {
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState<typeof form | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
+
+  const [services, setServices] = useState<{name: string, slug: string, short: string}[]>([]);
+  const [loadingServices, setLoadingServices] = useState(true);
+
+  useEffect(() => {
+    const fetchServices = async () => {
+      const { data } = await supabase
+        .from("services" as any)
+        .select("name, slug, short_description")
+        .order("display_order", { ascending: true });
+      
+      if (data) {
+        setServices(data.map(s => ({ 
+          name: s.name, 
+          slug: s.slug, 
+          short: s.short_description 
+        })));
+      }
+      setLoadingServices(false);
+    };
+    fetchServices();
+  }, []);
+
+  const update = (k: keyof typeof form, v: string) => {
+    setForm((f) => ({ ...f, [k]: v }));
+    setErrors((e) => ({ ...e, [k]: "" }));
+  };
+
+  useEffect(() => {
+    if (!loadingServices && presetSlug) {
+      const found = services.find(s => s.slug === presetSlug);
+      if (found) update("service", found.name);
+    }
+  }, [loadingServices, presetSlug, services]);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
@@ -289,22 +322,28 @@ const Book = () => {
                           <p className="text-muted-foreground">What can we help you with today?</p>
                         </div>
                         <div className="grid gap-3">
-                          {SERVICES.map((s) => (
-                            <button
-                              type="button"
-                              key={s.slug}
-                              onClick={() => update("service", s.name)}
-                              className={`p-6 rounded-2xl border-2 text-left transition-all duration-300 group ${
-                                form.service === s.name ? "border-primary bg-primary-soft/40 shadow-sm" : "border-border hover:border-primary/40 hover:bg-muted/30"
-                              }`}
-                            >
-                              <div className="flex justify-between items-center">
-                                <p className={`font-bold text-lg ${form.service === s.name ? "text-primary" : ""}`}>{s.name}</p>
-                                {form.service === s.name && <CheckCircle2 className="h-5 w-5 text-primary" />}
-                              </div>
-                              <p className="text-sm text-muted-foreground mt-1 leading-relaxed">{s.short}</p>
-                            </button>
-                          ))}
+                          {loadingServices ? (
+                            <div className="py-10 flex justify-center"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
+                          ) : services.length === 0 ? (
+                            <p className="text-center text-muted-foreground p-10 border border-dashed rounded-2xl">No services available currently.</p>
+                          ) : (
+                            services.map((s) => (
+                              <button
+                                type="button"
+                                key={s.slug}
+                                onClick={() => update("service", s.name)}
+                                className={`p-6 rounded-2xl border-2 text-left transition-all duration-300 group ${
+                                  form.service === s.name ? "border-primary bg-primary-soft/40 shadow-sm" : "border-border hover:border-primary/40 hover:bg-muted/30"
+                                }`}
+                              >
+                                <div className="flex justify-between items-center">
+                                  <p className={`font-bold text-lg ${form.service === s.name ? "text-primary" : ""}`}>{s.name}</p>
+                                  {form.service === s.name && <CheckCircle2 className="h-5 w-5 text-primary" />}
+                                </div>
+                                <p className="text-sm text-muted-foreground mt-1 leading-relaxed">{s.short}</p>
+                              </button>
+                            ))
+                          )}
                         </div>
                       </div>
                     )}

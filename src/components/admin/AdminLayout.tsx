@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import {
   LayoutDashboard, CalendarDays, Users, Star, MessageSquare, BookOpen,
-  LogOut, Home as HomeIcon, ShieldCheck, Settings, User, ChevronDown
+  LogOut, Home as HomeIcon, ShieldCheck, Settings, User, ChevronDown, Briefcase
 } from "lucide-react";
 import logo from "@/assets/logo.jpeg";
 import { NotificationBell } from "@/components/NotificationBell";
@@ -26,6 +26,7 @@ const items = [
   { to: "/admin/appointments", label: "Appointments", icon: CalendarDays },
   { to: "/admin/reviews", label: "Reviews", icon: Star },
   { to: "/admin/users", label: "Users", icon: Users },
+  { to: "/admin/services", label: "Services", icon: Briefcase },
   { to: "/admin/notifications", label: "Notifications", icon: MessageSquare },
   { to: "/admin/chatbot", label: "Chatbot KB", icon: BookOpen },
 ];
@@ -122,6 +123,12 @@ export const AdminLayout = ({ children, title, subtitle }: AdminLayoutProps) => 
                     <Link to="/" className="flex items-center w-full">
                       <HomeIcon className="mr-2 h-4 w-4 text-primary" />
                       <span>View Website</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild className="rounded-lg cursor-pointer focus:bg-primary-soft py-2.5">
+                    <Link to="/admin/services" className="flex items-center w-full">
+                      <Briefcase className="mr-2 h-4 w-4 text-primary" />
+                      <span>Manage Services</span>
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild className="rounded-lg cursor-pointer focus:bg-primary-soft py-2.5">
