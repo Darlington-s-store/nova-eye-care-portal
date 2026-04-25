@@ -54,7 +54,6 @@ export default function AdminServices() {
     setLoading(true);
     const { id, ...dataToSave } = editing;
     
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { error } = isNew 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       ? await (supabase as any).from("services").insert([editing])
@@ -129,7 +128,7 @@ export default function AdminServices() {
               <Card className="lg:col-span-7 p-8 shadow-elegant border-primary/10 rounded-[2rem]">
                 <div className="flex justify-between items-center mb-8">
                   <div>
-                    <Badge variant="hero" className="mb-2 bg-primary/10 text-primary hover:bg-primary/20 border-0">{isNew ? "Creative Mode" : "Update Mode"}</Badge>
+                    <Badge variant="secondary" className="mb-2 bg-primary/10 text-primary hover:bg-primary/20 border-0">{isNew ? "Creative Mode" : "Update Mode"}</Badge>
                     <h2 className="text-2xl font-bold tracking-tight">{isNew ? "Design New Service" : "Refine Service Details"}</h2>
                   </div>
                   <Button variant="ghost" size="icon" onClick={() => { setEditing(null); setIsNew(false); }} className="rounded-full">
