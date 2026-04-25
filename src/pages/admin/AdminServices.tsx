@@ -217,8 +217,9 @@ export default function AdminServices() {
 
                                     setEditing({ ...editing, image_url: publicUrl });
                                     toast.success("Image uploaded successfully");
-                                  } catch (error: any) {
-                                    toast.error(`Upload failed: ${error.message}`);
+                                  } catch (error) {
+                                    const message = error instanceof Error ? error.message : "An unexpected error occurred";
+                                    toast.error(`Upload failed: ${message}`);
                                   } finally {
                                     setUploading(false);
                                   }
