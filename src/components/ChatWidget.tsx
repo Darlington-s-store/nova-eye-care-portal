@@ -25,8 +25,6 @@ export const ChatWidget = () => {
   const navigate = useNavigate();
   const { pathname } = window.location;
 
-  if (pathname.startsWith("/admin")) return null;
-
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTo({
@@ -35,6 +33,8 @@ export const ChatWidget = () => {
       });
     }
   }, [messages, loading]);
+
+  if (pathname.startsWith("/admin")) return null;
 
   const send = async (text: string) => {
     const trimmed = text.trim();
