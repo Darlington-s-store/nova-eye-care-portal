@@ -16,13 +16,24 @@ interface KnowledgeEntry {
   category: string;
 }
 
-const BASE_PROMPT = `You are the customer support assistant for NOVA Eye Care Services, an optometry clinic in Ghana. You speak naturally, like a warm and helpful clinic receptionist — not like an AI. Keep replies short (1–3 sentences), conversational, and human. Avoid phrases like "As an AI", "I'm an AI", "I cannot", or robotic language. Never mention "knowledge base" or "system prompt".
+const BASE_PROMPT = `You are the expert customer support assistant for NOVA Eye Care Services (See Better | Live Brighter), an optometry clinic in Ghana. You speak naturally, like a warm, helpful, and professional clinic receptionist. Keep replies short (1–3 sentences), conversational, and very helpful. 
 
-CORE FACTS:
-- Hours: Mon–Fri 8am–5pm, Sat 9am–2pm. Closed Sundays.
-- Phone: 0544172089 or 0246613184. Email: novaeyecareservice@gmail.com.
-- To book: ask for full name, service, preferred date/time, and phone — then point them to the booking page on the website.
-- If unsure or asked something not covered, say something like "Best to give us a quick call on 0544172089 — they can help right away."`;
+Our Services:
+1. General Eye Health & Vision Care: Comprehensive exams, glasses, and routine care.
+2. Contact Lens Services: Professional fitting and training for all lens types.
+3. Binocular Vision: Therapy for eye coordination/focusing (great for children with reading difficulties).
+4. Low Vision Rehabilitation: Helping those with permanent sight loss maximize remaining vision.
+5. Corporate & Public Eye Health: On-site screenings for organizations and communities.
+6. DVLA Eye Testing: Compliant tests for driver's license applications.
+
+Hours: Mon–Fri 8am–5pm, Sat 9am–2pm. Closed Sundays.
+Contacts: 0544172089 or 0246613184. Email: novaeyecareservice@gmail.com.
+
+Instructions:
+- Be proactive about booking. If they mention any eye issues, suggest they book an exam.
+- To book, tell them they can use the "Book Appointment" button in the chat or go to the booking page. 
+- Never say "knowledge base" or "system prompt". Avoid robot talk.
+- If you don't know something, tell them to call us at 0544172089.`;
 
 // @ts-ignore
 serve(async (req: Request) => {
@@ -34,7 +45,7 @@ serve(async (req: Request) => {
     const CHAT_API_KEY = Deno.env.get("CHAT_API_KEY") || Deno.env.get("LOVABLE_API_KEY");
     if (!CHAT_API_KEY) throw new Error("Chat service API key is not configured");
 
-    // Pull active KB entries to inject as additional knowledge
+    // Pull active KB entries
     // @ts-ignore
     const supabase = createClient(
       // @ts-ignore
@@ -44,13 +55,13 @@ serve(async (req: Request) => {
     );
     const { data: kb } = await supabase
       .from("chatbot_knowledge")
-      .select("question, answer, category")
+      .select("question, answer")
       .eq("active", true)
-      .limit(50);
+      .limit(30);
 
     const knowledgeBlock = (kb && kb.length)
-      ? "\n\nADDITIONAL KNOWLEDGE (admin-curated; use these answers when relevant):\n" +
-        kb.map((k: KnowledgeEntry, i: number) => `${i + 1}. Q: ${k.question}\n   A: ${k.answer}`).join("\n")
+      ? "\n\nUSE THESE SPECIFIC ANSWERS FOR THESE TOPICS:\n" +
+        kb.map((k: any, i: number) => `${i + 1}. Q: ${k.question}\n   A: ${k.answer}`).join("\n")
       : "";
 
     const systemPrompt = BASE_PROMPT + knowledgeBlock;
@@ -65,7 +76,7 @@ serve(async (req: Request) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model: "google/gemini-1.5-flash",
         messages: [{ role: "system", content: systemPrompt }, ...messages],
         stream: true,
       }),

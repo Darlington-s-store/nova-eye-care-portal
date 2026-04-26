@@ -23,6 +23,9 @@ export const ChatWidget = () => {
   const [error, setError] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+  const { pathname } = window.location;
+
+  if (pathname.startsWith("/admin")) return null;
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -116,9 +119,8 @@ export const ChatWidget = () => {
             exit={{ scale: 0, opacity: 0 }}
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
-            onClick={() => setOpen(true)}
             aria-label="Open chat"
-            className="fixed bottom-6 right-6 z-50 flex h-16 w-16 items-center justify-center rounded-full bg-hero-gradient text-primary-foreground shadow-elegant hover:shadow-glow transition-shadow"
+            className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 transition-all"
           >
             <MessageCircle className="h-7 w-7" />
           </motion.button>
@@ -133,10 +135,10 @@ export const ChatWidget = () => {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.8, y: 100 }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="fixed inset-0 sm:inset-auto sm:bottom-6 sm:right-6 z-50 sm:w-[400px] sm:h-[600px] flex flex-col bg-card border border-border sm:rounded-3xl shadow-elegant overflow-hidden glass"
+            className="fixed inset-0 sm:inset-auto sm:bottom-6 sm:right-6 z-50 sm:w-[380px] sm:h-[600px] flex flex-col bg-card border border-border sm:rounded-2xl shadow-2xl overflow-hidden"
           >
             {/* Header */}
-            <div className="bg-hero-gradient text-primary-foreground p-5 flex items-start justify-between shadow-sm">
+            <div className="bg-primary text-primary-foreground p-4 flex items-start justify-between">
               <div>
                 <h3 className="font-bold text-lg leading-tight">NOVA Assistant</h3>
                 <div className="flex items-center gap-1.5 mt-1">
@@ -154,7 +156,7 @@ export const ChatWidget = () => {
             </div>
 
             {/* Messages */}
-            <div ref={scrollRef} className="flex-1 overflow-y-auto p-5 space-y-4 bg-secondary/20">
+            <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-4 bg-muted/30">
               {messages.map((m, i) => (
                 <motion.div 
                   key={i} 
@@ -192,16 +194,36 @@ export const ChatWidget = () => {
 
               {messages.length === 1 && (
                 <motion.div 
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.5 }}
-                  className="pt-2"
+                   initial={{ opacity: 0, y: 10 }}
+                   animate={{ opacity: 1, y: 0 }}
+                   transition={{ delay: 0.5 }}
+                   className="pt-2 space-y-2"
                 >
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      onClick={() => send("Tell me about your services")}
+                      className="text-xs font-semibold px-3 py-1.5 rounded-full bg-primary/10 text-primary border border-primary/20 hover:bg-primary hover:text-white transition-all"
+                    >
+                      Our Services
+                    </button>
+                    <button
+                      onClick={() => send("What are your opening hours?")}
+                      className="text-xs font-semibold px-3 py-1.5 rounded-full bg-primary/10 text-primary border border-primary/20 hover:bg-primary hover:text-white transition-all"
+                    >
+                      Opening Hours
+                    </button>
+                    <button
+                      onClick={() => send("Do you do DVLA eye testing?")}
+                      className="text-xs font-semibold px-3 py-1.5 rounded-full bg-primary/10 text-primary border border-primary/20 hover:bg-primary hover:text-white transition-all"
+                    >
+                      DVLA Testing
+                    </button>
+                  </div>
                   <button
                     onClick={() => { setOpen(false); navigate("/book"); }}
-                    className="inline-flex items-center gap-2 text-sm font-bold px-5 py-2.5 rounded-xl bg-primary-soft text-primary hover:bg-primary hover:text-primary-foreground transition-all duration-300 shadow-sm"
+                    className="w-full inline-flex items-center justify-center gap-2 text-sm font-bold px-4 py-2.5 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-all shadow-sm"
                   >
-                    <CalendarPlus className="h-4 w-4" /> Book an Appointment
+                    <CalendarPlus className="h-4 w-4" /> Book Appointment
                   </button>
                 </motion.div>
               )}
@@ -210,16 +232,16 @@ export const ChatWidget = () => {
             {/* Input */}
             <form
               onSubmit={(e) => { e.preventDefault(); send(input); }}
-              className="border-t border-border p-4 flex gap-3 bg-card glass"
+              className="border-t border-border p-3 flex gap-2 bg-card"
             >
               <input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder="How can I help you?"
                 disabled={loading}
-                className="flex-1 rounded-xl border border-input bg-background px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-muted-foreground/60"
+                className="flex-1 rounded-lg border border-input bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary transition-all placeholder:text-muted-foreground/60"
               />
-              <Button type="submit" size="icon" variant="hero" className="rounded-xl h-11 w-11 shadow-lg shrink-0" disabled={loading || !input.trim()}>
+              <Button type="submit" size="icon" className="rounded-lg h-10 w-10 shadow-sm shrink-0" disabled={loading || !input.trim()}>
                 <Send className="h-4 w-4" />
               </Button>
             </form>
