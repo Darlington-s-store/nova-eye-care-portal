@@ -45,7 +45,7 @@ export const generateScreeningPDF = (data: ScreeningData) => {
       ["Visual Acuity (V.A)", data.va_right || "N/A", data.va_left || "N/A"],
       ["Intraocular Pressure (IOP)", `${data.iop_right || "N/A"} mmHg`, `${data.iop_left || "N/A"} mmHg`],
     ],
-    headStyles: { fillStyle: 'fill', fillColor: [10, 45, 100], textColor: [255, 255, 255], fontStyle: 'bold' },
+    headStyles: { fillColor: [10, 45, 100], textColor: [255, 255, 255], fontStyle: 'bold' },
     theme: 'grid',
     styles: { fontSize: 10, cellPadding: 5 }
   });
@@ -70,7 +70,7 @@ export const generateScreeningPDF = (data: ScreeningData) => {
   
   doc.setFontSize(10);
   doc.setFont("helvetica", "normal");
-  const followupLines = doc.splitTextToSize(data.followup || "Regular annual review recommended.", 20, followUpY + 7);
+  const followupLines = doc.splitTextToSize(data.followup || "Regular annual review recommended.", pageWidth - 40);
   doc.text(followupLines, 20, followUpY + 7);
 
   // Footer

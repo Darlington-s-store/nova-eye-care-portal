@@ -28,9 +28,9 @@ type Appointment = {
   created_at: string;
 };
 
-type Profile = { 
-  full_name: string | null; 
-  phone: string | null; 
+type Profile = {
+  full_name: string | null;
+  phone: string | null;
   email: string | null;
   registration_completed: boolean | null;
 };
@@ -331,7 +331,7 @@ const Dashboard = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </Layout>
+    </Layout >
   );
 };
 
