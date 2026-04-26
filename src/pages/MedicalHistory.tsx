@@ -31,14 +31,10 @@ export default function MedicalHistoryPage() {
     allergies: ""
   });
 
-  useEffect(() => {
-    if (user) fetchHistory();
-  }, [user, fetchHistory]);
-
   const fetchHistory = useCallback(async () => {
     if (!user) return;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data, error } = await (supabase.from("patient_medical_history") as any)
+    const { data, error } = await (supabase as any).from("patient_medical_history")
       .select("*")
       .eq("patient_id", user.id)
       .maybeSingle();
@@ -57,11 +53,15 @@ export default function MedicalHistoryPage() {
     setFetching(false);
   }, [user]);
 
+  useEffect(() => {
+    if (user) fetchHistory();
+  }, [user, fetchHistory]);
+
   const handleSave = async () => {
     if (!user) return;
     setLoading(true);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { error } = await (supabase.from("patient_medical_history") as any).upsert({
+    const { error } = await (supabase as any).from("patient_medical_history").upsert({
       patient_id: user.id,
       ...history,
       updated_at: new Date().toISOString(),

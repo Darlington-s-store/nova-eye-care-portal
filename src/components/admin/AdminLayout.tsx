@@ -56,13 +56,18 @@ const AdminSidebarInner = () => {
     const fetchRole = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const { data } = await (supabase as any)
-          .from("profiles")
+        const { data } = await supabase
+          .from("user_roles")
           .select("role")
-          .eq("id", user.id)
-          .single();
-        setRole(data?.role || 'patient');
+          .eq("user_id", user.id);
+        const roles = (data ?? []).map((r) => r.role);
+        if (roles.includes("admin")) {
+          setRole("super_admin");
+        } else if (roles.length > 0) {
+          setRole(roles[0]);
+        } else {
+          setRole("patient");
+        }
       }
     };
     fetchRole();
