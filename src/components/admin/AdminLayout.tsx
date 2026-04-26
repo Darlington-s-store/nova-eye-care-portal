@@ -25,7 +25,7 @@ import {
 interface SidebarItem {
   to: string;
   label: string;
-  icon: any; // Lucide icon
+  icon: React.ElementType; // Lucide icon
   end?: boolean;
 }
 
@@ -57,7 +57,11 @@ const AdminSidebarInner = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const { data } = await (supabase as any).from("profiles").select("role").eq("id", user.id).single();
+        const { data } = await (supabase as any)
+          .from("profiles")
+          .select("role")
+          .eq("id", user.id)
+          .single();
         setRole(data?.role || 'patient');
       }
     };

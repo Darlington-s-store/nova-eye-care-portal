@@ -62,9 +62,9 @@ const Home = () => {
 
   useEffect(() => {
     const fetchContent = async () => {
-      const heroData = await getCMSContent("hero");
-      const newsData = await getCMSContent("announcements");
-      const hoursData = await getCMSContent("hours");
+      const heroData = await getCMSContent<HeroContent>("hero");
+      const newsData = await getCMSContent<Announcements>("announcements");
+      const hoursData = await getCMSContent<Record<string, string>>("hours");
       if (heroData) setHero(heroData);
       if (newsData) setAnnouncement(newsData);
       if (hoursData) setHours(hoursData);

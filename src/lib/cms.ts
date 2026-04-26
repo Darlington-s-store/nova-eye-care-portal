@@ -29,7 +29,7 @@ export type CMSContent = {
 const CACHE_KEY = "nova_cms_cache";
 const CACHE_TIME = 10 * 60 * 1000; // 10 minutes
 
-export const getCMSContent = async <T = any>(section: string): Promise<T | null> => {
+export const getCMSContent = async <T = unknown>(section: string): Promise<T | null> => {
   // Check cache first
   try {
     const cached = localStorage.getItem(`${CACHE_KEY}_${section}`);
