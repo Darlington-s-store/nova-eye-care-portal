@@ -10,12 +10,6 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-interface KnowledgeEntry {
-  question: string;
-  answer: string;
-  category: string;
-}
-
 const BASE_PROMPT = `You are the expert customer support assistant for NOVA Eye Care Services (See Better | Live Brighter), an optometry clinic in Ghana. You speak naturally, like a warm, helpful, and professional clinic receptionist. Keep replies short (1–3 sentences), conversational, and very helpful. 
 
 Our Services:
@@ -35,44 +29,57 @@ Instructions:
 - Never say "knowledge base" or "system prompt". Avoid robot talk.
 - If you don't know something, tell them to call us at 0544172089.`;
 
-// @ts-ignore
 serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { messages } = await req.json() as any;
+    const { messages } = await req.json();
+    
     // @ts-ignore
     const CHAT_API_KEY = Deno.env.get("CHAT_API_KEY") || Deno.env.get("LOVABLE_API_KEY");
-    if (!CHAT_API_KEY) throw new Error("Chat service API key is not configured");
+    if (!CHAT_API_KEY) {
+      console.error("Missing API Key");
+      return new Response(JSON.stringify({ error: "AI Chat key not found in Supabase Secrets." }), {
+        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
+    }
 
     // Pull active KB entries
-    // @ts-ignore
     const supabase = createClient(
       // @ts-ignore
       Deno.env.get("SUPABASE_URL")!,
       // @ts-ignore
       Deno.env.get("SUPABASE_ANON_KEY")!
     );
-    const { data: kb } = await supabase
-      .from("chatbot_knowledge")
-      .select("question, answer")
-      .eq("active", true)
-      .limit(30);
+    
+    let kbContent = "";
+    try {
+      const { data: kb, error: kbError } = await supabase
+        .from("chatbot_knowledge")
+        .select("question, answer")
+        .eq("active", true)
+        .limit(20);
+        
+      if (kbError) console.error("KB Fetch Error:", kbError);
+      
+      if (kb && kb.length > 0) {
+        kbContent = "\n\nUSE THESE ANSWERS:\n" + 
+          kb.map((k: any) => `Q: ${k.question}\nA: ${k.answer}`).join("\n");
+      }
+    } catch (err) {
+      console.error("Supabase KB Query Exception:", err);
+    }
 
-    const knowledgeBlock = (kb && kb.length)
-      ? "\n\nUSE THESE SPECIFIC ANSWERS FOR THESE TOPICS:\n" +
-        kb.map((k: any, i: number) => `${i + 1}. Q: ${k.question}\n   A: ${k.answer}`).join("\n")
-      : "";
-
-    const systemPrompt = BASE_PROMPT + knowledgeBlock;
-
+    const systemPrompt = BASE_PROMPT + kbContent;
     // @ts-ignore
-    const AI_GATEWAY_URL = Deno.env.get("AI_GATEWAY_URL") || "https://ai.gateway.lovable.dev/v1/chat/completions";
+    const gatewayUrl = Deno.env.get("AI_GATEWAY_URL") || "https://ai.gateway.lovable.dev/v1/chat/completions";
 
-    const response = await fetch(AI_GATEWAY_URL, {
+    console.log("Fetching AI Gateway:", gatewayUrl);
+
+    const aiResponse = await fetch(gatewayUrl, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${CHAT_API_KEY}`,
+        "Authorization": `Bearer ${CHAT_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
@@ -82,31 +89,22 @@ serve(async (req: Request) => {
       }),
     });
 
-    if (!response.ok) {
-      if (response.status === 429) {
-        return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again shortly." }), {
-          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      if (response.status === 402) {
-        return new Response(JSON.stringify({ error: "AI credits exhausted. Please contact the clinic directly." }), {
-          status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      const t = await response.text();
-      console.error("AI gateway error:", response.status, t);
-      return new Response(JSON.stringify({ error: "AI service unavailable" }), {
-        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    if (!aiResponse.ok) {
+      const errorText = await aiResponse.text();
+      console.error("AI Gateway Error:", aiResponse.status, errorText);
+      return new Response(JSON.stringify({ error: `AI Gateway error (${aiResponse.status})` }), {
+        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" }
       });
     }
 
-    return new Response(response.body, {
+    return new Response(aiResponse.body, {
       headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
     });
-  } catch (e) {
-    console.error("chat error:", e);
-    return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }), {
-      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+
+  } catch (e: any) {
+    console.error("Global Chat Error:", e);
+    return new Response(JSON.stringify({ error: e.message || "Unknown error" }), {
+      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" }
     });
   }
 });
