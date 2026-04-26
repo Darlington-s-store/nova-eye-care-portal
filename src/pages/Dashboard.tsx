@@ -69,18 +69,20 @@ const Dashboard = () => {
         supabase.from("appointments").select("*").eq("user_id", user.id).order("appointment_date", { ascending: false }),
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (supabase as any).from("profiles").select("full_name, phone, email, registration_completed").eq("id", user.id).single(),
-        supabase.from("eye_screenings").select("id, screening_date, diagnosis, va_right_eye, va_left_eye").eq("patient_id", user.id).eq("is_visible_to_patient", true).order("screening_date", { ascending: false })
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (supabase as any).from("eye_screenings").select("id, screening_date, diagnosis, va_right_eye, va_left_eye").eq("patient_id", user.id).eq("is_visible_to_patient", true).order("screening_date", { ascending: false })
       ]);
       setAppointments((appts as Appointment[]) || []);
       setProfile(prof as Profile);
-      setScreenings((screens as Screening[]) || []);
+      setScreenings((screens as unknown as Screening[]) || []);
       setLoading(false);
     })();
 
     const ch = supabase.channel(`dash-${user.id}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "appointments", filter: `user_id=eq.${user.id}` },
         async () => {
-          const { data: appts } = await supabase.from("appointments").select("*").eq("user_id", user.id).order("appointment_date", { ascending: false });
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const { data: appts } = await (supabase as any).from("appointments").select("*").eq("user_id", user.id).order("appointment_date", { ascending: false });
           setAppointments((appts as Appointment[]) || []);
         })
       .subscribe();
@@ -212,6 +214,14 @@ const Dashboard = () => {
             </Button>
           </Card>
 
+          <Card className="p-6">
+            <div className="flex items-center gap-3 mb-3">
+              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-soft text-primary">
+                <Star className="h-5 w-5" />
+              </span>
+              <h2 className="font-semibold">Share experience</h2>
+            </div>
+            <p className="text-sm text-muted-foreground mb-4">Help others by leaving a review.</p>
             <Button asChild variant="hero" size="sm" className="w-full">
               <Link to="/reviews">Write a review</Link>
             </Button>

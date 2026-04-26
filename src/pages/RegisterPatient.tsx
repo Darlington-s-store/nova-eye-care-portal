@@ -77,7 +77,7 @@ export default function RegisterPatient() {
           full_name: profile.full_name || "",
           phone: profile.phone || "",
           email: user.email || "",
-          nationality: (profile as any).nationality || "",
+          nationality: (profile as Record<string, string>).nationality || "",
         }));
       }
       setFetchingProfile(false);

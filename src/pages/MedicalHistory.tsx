@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Layout } from "@/components/Layout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -33,14 +33,14 @@ export default function MedicalHistoryPage() {
 
   useEffect(() => {
     if (user) fetchHistory();
-  }, [user]);
+  }, [user, fetchHistory]);
 
-  const fetchHistory = async () => {
-    setFetching(true);
-    const { data, error } = await supabase
-      .from("patient_medical_history")
+  const fetchHistory = useCallback(async () => {
+    if (!user) return;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data, error } = await (supabase.from("patient_medical_history") as any)
       .select("*")
-      .eq("patient_id", user?.id)
+      .eq("patient_id", user.id)
       .maybeSingle();
 
     if (error) {
@@ -51,23 +51,21 @@ export default function MedicalHistoryPage() {
         systemic_conditions: data.systemic_conditions || "",
         current_medications: data.current_medications || "",
         family_eye_history: data.family_eye_history || "",
-        allergies: data.allergies || ""
+        allergies: data.allergies || "",
       });
     }
     setFetching(false);
-  };
+  }, [user]);
 
   const handleSave = async () => {
     if (!user) return;
     setLoading(true);
-
-    const { error } = await supabase
-      .from("patient_medical_history")
-      .upsert({
-        patient_id: user.id,
-        ...history,
-        updated_at: new Date().toISOString()
-      }, { onConflict: 'patient_id' });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error } = await (supabase.from("patient_medical_history") as any).upsert({
+      patient_id: user.id,
+      ...history,
+      updated_at: new Date().toISOString(),
+    }, { onConflict: 'patient_id' });
 
     if (error) {
       toast.error(error.message);
@@ -191,7 +189,7 @@ export default function MedicalHistoryPage() {
   );
 }
 
-function Section({ icon: Icon, title, description, value, onChange, placeholder }: any) {
+function Section({ icon: Icon, title, description, value, onChange, placeholder }: { icon: React.ElementType; title: string; description: string; value: string; onChange: (v: string) => void; placeholder: string }) {
   return (
     <div className="space-y-4 group">
       <div className="flex items-center gap-3">

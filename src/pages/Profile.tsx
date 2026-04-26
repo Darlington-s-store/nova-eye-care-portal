@@ -19,15 +19,16 @@ const Profile = () => {
   useEffect(() => {
     if (!user) return;
     (async () => {
-      const { data } = await (supabase.from("profiles") as any)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data: profile } = await (supabase.from("profiles") as any)
         .select("full_name, phone, email, nationality")
         .eq("id", user.id)
         .single();
-      if (data) setForm({
-        full_name: data.full_name ?? "",
-        phone: data.phone ?? "",
-        email: data.email ?? user.email ?? "",
-        nationality: data.nationality ?? "",
+      if (profile) setForm({
+        full_name: profile.full_name || "",
+        phone: profile.phone || "",
+        email: user.email || "",
+        nationality: (profile as Record<string, string>).nationality || "",
       });
       setLoading(false);
     })();
@@ -38,11 +39,12 @@ const Profile = () => {
     if (!user) return;
     if (form.full_name.trim().length < 2) { toast.error("Please enter your full name"); return; }
     setSaving(true);
-    const { error } = await supabase.from("profiles").update({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error } = await (supabase.from("profiles") as any).update({
       full_name: form.full_name.trim(),
       phone: form.phone.trim(),
       nationality: form.nationality.trim(),
-    } as any).eq("id", user.id);
+    }).eq("id", user.id);
     setSaving(false);
     if (error) { toast.error(error.message); return; }
     toast.success("Profile updated");

@@ -51,7 +51,8 @@ export const generateScreeningPDF = (data: ScreeningData) => {
   });
 
   // Diagnosis Section
-  const finalY = (doc as any).lastAutoTable.finalY + 15;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const finalY = (doc as Record<string, any>).lastAutoTable.finalY + 15;
   
   doc.setFontSize(12);
   doc.setFont("helvetica", "bold");
