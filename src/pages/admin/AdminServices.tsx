@@ -110,7 +110,7 @@ export default function AdminServices() {
             <Button onClick={() => { 
               setIsNew(true); 
               setEditing({ id: crypto.randomUUID(), slug: "", name: "", short_description: "", full_description: "", image_url: "https://images.unsplash.com/photo-1551232864-3f021f1d9316?q=80&w=800", display_order: services.length + 1 });
-            }} className="gap-2 rounded-xl shadow-lg hover:shadow-primary/20 transition-all">
+            }} className="gap-2 rounded-lg">
               <Plus className="h-4 w-4" /> New Service
             </Button>
           )}
@@ -126,11 +126,11 @@ export default function AdminServices() {
               className="grid lg:grid-cols-12 gap-8"
             >
               {/* Form Side */}
-              <Card className="lg:col-span-7 p-8 shadow-elegant border-primary/10 rounded-[2rem]">
+              <Card className="lg:col-span-12 lg:col-span-7 p-8 border rounded-xl">
                 <div className="flex justify-between items-center mb-8">
                   <div>
-                    <Badge variant="secondary" className="mb-2 bg-primary/10 text-primary hover:bg-primary/20 border-0">{isNew ? "Creative Mode" : "Update Mode"}</Badge>
-                    <h2 className="text-2xl font-bold tracking-tight">{isNew ? "Design New Service" : "Refine Service Details"}</h2>
+                    <Badge variant="outline" className="mb-2">{isNew ? "New Service" : "Edit Mode"}</Badge>
+                    <h2 className="text-2xl font-bold">{isNew ? "Create Service" : "Edit Service"}</h2>
                   </div>
                   <Button variant="ghost" size="icon" onClick={() => { setEditing(null); setIsNew(false); }} className="rounded-full">
                     <X className="h-5 w-5" />
@@ -264,8 +264,8 @@ export default function AdminServices() {
                 </div>
 
                 <div className="mt-10 flex justify-end gap-3 pt-6 border-t border-muted">
-                  <Button variant="outline" size="lg" onClick={() => { setEditing(null); setIsNew(false); }} className="rounded-xl px-8">Discard</Button>
-                  <Button onClick={handleSave} size="lg" className="rounded-xl px-8 gap-2 bg-hero-gradient border-0 font-bold shadow-lg shadow-primary/20" disabled={loading}>
+                  <Button variant="outline" size="lg" onClick={() => { setEditing(null); setIsNew(false); }} className="rounded-lg px-8">Discard</Button>
+                  <Button onClick={handleSave} size="lg" className="rounded-lg px-8 gap-2 font-bold" disabled={loading}>
                     {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                     Save Service
                   </Button>
@@ -277,7 +277,7 @@ export default function AdminServices() {
                 <div className="flex items-center gap-2 mb-2 font-bold text-muted-foreground uppercase text-xs tracking-widest pl-2">
                   <Eye className="h-3 w-3" /> Live card preview
                 </div>
-                <Card className="p-0 overflow-hidden border-orange-50/10 shadow-2xl transition-all duration-500 group rounded-[1.5rem] bg-white opacity-90 grayscale-[0.2] pointer-events-none border-dashed border-2">
+                <Card className="p-0 overflow-hidden shadow-sm transition-all duration-500 group rounded-xl bg-white opacity-90 pointer-events-none border-dashed border-2">
                   <div className="aspect-[16/10] relative overflow-hidden bg-muted">
                     {editing.image_url ? (
                       <img 
@@ -374,7 +374,7 @@ export default function AdminServices() {
                             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                             onError={(e) => { e.currentTarget.src = "/placeholder.svg"; }}
                           />
-                          <div className="absolute top-3 left-3 bg-black/60 text-white text-xs px-2.5 py-1 rounded-full backdrop-blur-md border border-white/20 font-bold">#{s.display_order}</div>
+                          <div className="absolute top-3 left-3 bg-black/60 text-white text-xs px-2.5 py-1 rounded-full border border-white/20 font-bold">#{s.display_order}</div>
                         </div>
                         <div className="p-5 flex flex-col flex-grow">
                           <h3 className="font-bold text-lg mb-2 group-hover:text-primary transition-colors line-clamp-1">{s.name}</h3>

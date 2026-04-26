@@ -127,24 +127,23 @@ export default function AdminScreenings() {
 
           <Dialog open={isRecording} onOpenChange={setIsRecording}>
             <DialogTrigger asChild>
-              <Button className="rounded-xl gap-2 px-6 h-11 font-bold shadow-lg shadow-primary/20">
+              <Button className="rounded-lg gap-2 px-6 h-11 font-bold">
                 <Plus className="h-4 w-4" /> New Diagnosis
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl rounded-[2rem] p-8 border-0 shadow-2xl">
+            <DialogContent className="max-w-2xl rounded-xl p-8 border shadow-lg">
               <DialogHeader>
                 <DialogTitle className="text-2xl font-bold flex items-center gap-2">
-                  <div className="h-10 w-10 bg-primary/10 rounded-2xl flex items-center justify-center text-primary"><Eye className="h-5 w-5" /></div>
                   New Eye Screening Record
                 </DialogTitle>
-                <DialogDescription className="text-muted-foreground italic">Enter clinical findings for the patient's current visit.</DialogDescription>
+                <DialogDescription>Enter clinical findings for the patient's current visit.</DialogDescription>
               </DialogHeader>
               
               <div className="grid gap-6 mt-4">
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest ml-1">Patient Selection</label>
+                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Patient Selection</label>
                   <select 
-                    className="w-full h-11 rounded-xl border border-border/40 bg-muted/30 px-3 outline-none focus:ring-2 focus:ring-primary/20 transition-all font-medium"
+                    className="w-full h-11 rounded-lg border bg-background px-3 outline-none focus:ring-1 focus:ring-primary transition-all font-medium"
                     value={newScreening.patient_id}
                     onChange={(e) => setNewScreening({...newScreening, patient_id: e.target.value})}
                   >
@@ -154,28 +153,28 @@ export default function AdminScreenings() {
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-4 p-4 bg-muted/20 rounded-2xl border border-muted/50">
+                  <div className="space-y-4 p-4 bg-muted rounded-lg border">
                     <h3 className="text-xs font-bold text-primary uppercase">Right Eye (OD)</h3>
-                    <Input placeholder="Visual Acuity (e.g. 6/6)" value={newScreening.va_right_eye} onChange={e => setNewScreening({...newScreening, va_right_eye: e.target.value})} className="bg-white border-0 shadow-sm rounded-lg" />
-                    <Input placeholder="IOP (mmHg)" type="number" value={newScreening.iop_right} onChange={e => setNewScreening({...newScreening, iop_right: e.target.value})} className="bg-white border-0 shadow-sm rounded-lg" />
+                    <Input placeholder="Visual Acuity" value={newScreening.va_right_eye} onChange={e => setNewScreening({...newScreening, va_right_eye: e.target.value})} className="bg-background border shadow-none" />
+                    <Input placeholder="IOP (mmHg)" type="number" value={newScreening.iop_right} onChange={e => setNewScreening({...newScreening, iop_right: e.target.value})} className="bg-background border shadow-none" />
                   </div>
-                  <div className="space-y-4 p-4 bg-primary/5 rounded-2xl border border-primary/10">
+                  <div className="space-y-4 p-4 bg-muted rounded-lg border">
                     <h3 className="text-xs font-bold text-primary uppercase">Left Eye (OS)</h3>
-                    <Input placeholder="Visual Acuity (e.g. 6/9)" value={newScreening.va_left_eye} onChange={e => setNewScreening({...newScreening, va_left_eye: e.target.value})} className="bg-white border-0 shadow-sm rounded-lg" />
-                    <Input placeholder="IOP (mmHg)" type="number" value={newScreening.iop_left} onChange={e => setNewScreening({...newScreening, iop_left: e.target.value})} className="bg-white border-0 shadow-sm rounded-lg" />
+                    <Input placeholder="Visual Acuity" value={newScreening.va_left_eye} onChange={e => setNewScreening({...newScreening, va_left_eye: e.target.value})} className="bg-background border shadow-none" />
+                    <Input placeholder="IOP (mmHg)" type="number" value={newScreening.iop_left} onChange={e => setNewScreening({...newScreening, iop_left: e.target.value})} className="bg-background border shadow-none" />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest ml-1">Clinical Assessment</label>
-                  <Textarea placeholder="Diagnosis & Impression..." rows={3} value={newScreening.diagnosis} onChange={e => setNewScreening({...newScreening, diagnosis: e.target.value})} className="rounded-xl border-border/40" />
-                  <Textarea placeholder="Recommended Follow-up..." rows={2} value={newScreening.recommended_followup} onChange={e => setNewScreening({...newScreening, recommended_followup: e.target.value})} className="rounded-xl border-border/40" />
+                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Clinical Assessment</label>
+                  <Textarea placeholder="Diagnosis & Impression..." rows={3} value={newScreening.diagnosis} onChange={e => setNewScreening({...newScreening, diagnosis: e.target.value})} />
+                  <Textarea placeholder="Recommended Follow-up..." rows={2} value={newScreening.recommended_followup} onChange={e => setNewScreening({...newScreening, recommended_followup: e.target.value})} />
                 </div>
               </div>
 
               <DialogFooter className="mt-8">
-                <Button variant="ghost" onClick={() => setIsRecording(false)} className="rounded-xl">Discard</Button>
-                <Button onClick={handleCreateScreening} disabled={loading} className="rounded-xl px-8 font-bold gap-2">
+                <Button variant="outline" onClick={() => setIsRecording(false)} className="rounded-lg">Discard</Button>
+                <Button onClick={handleCreateScreening} disabled={loading} className="rounded-lg px-8 font-bold gap-2">
                   {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
                   Save Medical Record
                 </Button>
@@ -185,7 +184,7 @@ export default function AdminScreenings() {
         </div>
 
         {/* Screening Table */}
-        <Card className="rounded-[2.5rem] border-0 shadow-elegant overflow-hidden">
+        <Card className="rounded-xl border shadow-sm overflow-hidden">
           {loading ? (
             <div className="p-20 flex flex-col items-center gap-4">
               <Loader2 className="h-10 w-10 animate-spin text-primary opacity-50" />

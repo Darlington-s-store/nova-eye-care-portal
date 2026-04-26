@@ -90,28 +90,27 @@ const AdminLogin = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6 relative bg-foreground">
+    <div className="min-h-screen flex items-center justify-center p-6 relative bg-muted/30">
       <div
-        className="absolute inset-0 bg-cover bg-center opacity-30"
+        className="absolute inset-0 bg-cover bg-center opacity-10 grayscale"
         style={{ backgroundImage: `url(${authBg})` }}
       />
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/40 via-background/60 to-foreground/80" />
 
       <div className="relative w-full max-w-md">
-        <div className="text-center mb-6 text-primary-foreground">
+        <div className="text-center mb-6">
           <div className="flex flex-col items-center gap-4 mb-6">
-            <div className="h-20 w-20 rounded-2xl bg-white shadow-elegant overflow-hidden p-2 flex items-center justify-center border border-white/20">
+            <div className="h-16 w-16 rounded-lg bg-white shadow-sm overflow-hidden p-2 flex items-center justify-center border">
               <img src={logo} alt="NOVA Eye Care Logo" className="h-full w-full object-contain" />
             </div>
-            <span className="inline-flex items-center gap-2 px-3 py-1 text-xs font-semibold rounded-full bg-white/10 backdrop-blur tracking-widest uppercase">
-              <ShieldCheck className="h-3.5 w-3.5" /> Restricted Area
+            <span className="inline-flex items-center gap-2 px-3 py-1 text-[10px] font-bold rounded bg-primary text-primary-foreground tracking-widest uppercase">
+              <ShieldCheck className="h-3.5 w-3.5" /> Restricted Access
             </span>
           </div>
-          <h1 className="text-3xl font-bold">Admin Portal</h1>
-          <p className="text-sm opacity-90 mt-1">Authorized personnel only</p>
+          <h1 className="text-2xl font-bold">Admin Portal</h1>
+          <p className="text-sm text-muted-foreground mt-1">Authorized personnel only</p>
         </div>
 
-        <Card className="p-7 md:p-8 shadow-elegant border-border/30 bg-card/95 backdrop-blur">
+        <Card className="p-7 md:p-8 shadow-sm border bg-card">
           <form onSubmit={onSignIn} className="space-y-5">
             <div>
               <Label htmlFor="ai-email">Admin Email</Label>
@@ -123,7 +122,7 @@ const AdminLogin = () => {
                 placeholder="admin@novaeyecare.com"
                 value={form.email} 
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
-                className="mt-1.5 h-12 border-primary/20 focus:ring-primary/20" 
+                className="mt-1.5 h-12 border focus:ring-1 focus:ring-primary" 
               />
             </div>
             <div>
@@ -140,7 +139,7 @@ const AdminLogin = () => {
                   placeholder="••••••••"
                   value={form.password} 
                   onChange={(e) => setForm({ ...form, password: e.target.value })}
-                  className="h-12 border-primary/20 focus:ring-primary/20 pr-10" 
+                  className="h-12 border focus:ring-1 focus:ring-primary pr-10" 
                 />
                 <button 
                   type="button" 
@@ -152,14 +151,14 @@ const AdminLogin = () => {
                 </button>
               </div>
             </div>
-            <Button type="submit" variant="hero" size="lg" className="w-full h-12 shadow-lg shadow-primary/20" disabled={loading}>
+            <Button type="submit" size="lg" className="w-full h-12 rounded-lg font-bold" disabled={loading}>
               {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <><Lock className="h-4 w-4 mr-2" /> Sign into Dashboard</>}
             </Button>
           </form>
         </Card>
 
-        <p className="text-center text-xs text-primary-foreground/80 mt-6">
-          <Link to="/" className="hover:text-primary-foreground">← Back to website</Link>
+        <p className="text-center text-xs text-muted-foreground mt-6 uppercase tracking-wider font-bold">
+          <Link to="/" className="hover:text-primary transition-colors">← Back to website</Link>
         </p>
       </div>
     </div>

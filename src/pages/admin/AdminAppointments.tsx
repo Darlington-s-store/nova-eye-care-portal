@@ -27,10 +27,10 @@ type Appt = {
 };
 
 const statusStyles: Record<string, string> = {
-  pending: "bg-yellow-100 text-yellow-900",
-  confirmed: "bg-primary-soft text-primary",
-  cancelled: "bg-muted text-muted-foreground",
-  completed: "bg-green-100 text-green-900",
+  pending: "bg-yellow-100 text-yellow-900 border-yellow-200",
+  confirmed: "bg-primary text-white",
+  cancelled: "bg-secondary text-secondary-foreground border-border",
+  completed: "bg-green-100 text-green-900 border-green-200",
 };
 
 const AdminAppointments = () => {
@@ -87,7 +87,7 @@ const AdminAppointments = () => {
 
   return (
     <AdminLayout title="Appointments" subtitle="Confirm, complete, or cancel patient bookings.">
-      <Card className="p-4 shadow-card mb-4 flex flex-wrap gap-3">
+      <Card className="p-4 border mb-4 shadow-sm flex flex-wrap gap-3">
         <div className="relative flex-1 min-w-[200px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search name, email, phone, service..." className="pl-9" />
@@ -128,7 +128,7 @@ const AdminAppointments = () => {
                   {a.notes && <p className="text-xs text-muted-foreground mt-2 italic">"{a.notes}"</p>}
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {a.status !== "confirmed" && <Button size="sm" variant="hero" onClick={() => updateStatus(a, "confirmed")}><CheckCircle2 className="h-4 w-4" /> Confirm</Button>}
+                  {a.status !== "confirmed" && <Button size="sm" onClick={() => updateStatus(a, "confirmed")}><CheckCircle2 className="h-4 w-4" /> Confirm</Button>}
                   {a.status !== "completed" && <Button size="sm" variant="outline" onClick={() => updateStatus(a, "completed")}>Complete</Button>}
                   {a.status !== "cancelled" && <Button size="sm" variant="outline" className="text-destructive hover:text-destructive" onClick={() => updateStatus(a, "cancelled")}><X className="h-4 w-4" /> Cancel</Button>}
                 </div>

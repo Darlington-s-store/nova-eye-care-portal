@@ -94,21 +94,21 @@ export default function AdminCMS() {
   return (
     <AdminLayout title="Content Management" subtitle="Wysiwyg control over your public website landing pages.">
       <Tabs defaultValue="hero" className="space-y-8">
-        <div className="flex justify-between items-center bg-white/40 backdrop-blur-md p-2 rounded-2xl border border-white/60 sticky top-0 z-10 shadow-sm">
+        <div className="flex justify-between items-center bg-muted p-1 rounded-lg border sticky top-0 z-10 shadow-sm">
           <TabsList className="bg-transparent gap-1">
-            <TabsTrigger value="hero" className="rounded-xl gap-2 font-bold data-[state=active]:bg-primary data-[state=active]:text-white">
+            <TabsTrigger value="hero" className="rounded-md gap-2 font-bold data-[state=active]:bg-primary data-[state=active]:text-white">
               <Layout className="h-4 w-4" /> Hero
             </TabsTrigger>
-            <TabsTrigger value="team" className="rounded-xl gap-2 font-bold data-[state=active]:bg-primary data-[state=active]:text-white">
+            <TabsTrigger value="team" className="rounded-md gap-2 font-bold data-[state=active]:bg-primary data-[state=active]:text-white">
               <Users className="h-4 w-4" /> Team
             </TabsTrigger>
-            <TabsTrigger value="hours" className="rounded-xl gap-2 font-bold data-[state=active]:bg-primary data-[state=active]:text-white">
+            <TabsTrigger value="hours" className="rounded-md gap-2 font-bold data-[state=active]:bg-primary data-[state=active]:text-white">
               <Clock className="h-4 w-4" /> Hours
             </TabsTrigger>
-            <TabsTrigger value="contact" className="rounded-xl gap-2 font-bold data-[state=active]:bg-primary data-[state=active]:text-white">
+            <TabsTrigger value="contact" className="rounded-md gap-2 font-bold data-[state=active]:bg-primary data-[state=active]:text-white">
               <Phone className="h-4 w-4" /> Contact
             </TabsTrigger>
-            <TabsTrigger value="news" className="rounded-xl gap-2 font-bold data-[state=active]:bg-primary data-[state=active]:text-white">
+            <TabsTrigger value="news" className="rounded-md gap-2 font-bold data-[state=active]:bg-primary data-[state=active]:text-white">
               <Megaphone className="h-4 w-4" /> Announcements
             </TabsTrigger>
           </TabsList>
@@ -116,13 +116,12 @@ export default function AdminCMS() {
 
         {/* Hero Section */}
         <TabsContent value="hero">
-          <Card className="p-8 shadow-elegant rounded-[2.5rem] border-0">
+          <Card className="p-8 border rounded-xl">
             <div className="flex justify-between items-center mb-8">
               <h2 className="text-2xl font-bold flex items-center gap-3">
-                <div className="h-10 w-10 bg-primary/10 rounded-2xl flex items-center justify-center text-primary italic font-serif">H</div>
                 Hero Section Configuration
               </h2>
-              <Button onClick={() => handleSave("hero")} disabled={loading} className="rounded-xl gap-2 px-8 font-bold">
+              <Button onClick={() => handleSave("hero")} disabled={loading} className="rounded-lg gap-2 px-8 font-bold">
                 {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} Save Changes
               </Button>
             </div>
@@ -166,17 +165,17 @@ export default function AdminCMS() {
 
         {/* Team Section */}
         <TabsContent value="team">
-          <Card className="p-8 shadow-elegant rounded-[2.5rem] border-0">
+          <Card className="p-8 border rounded-xl">
             <div className="flex justify-between items-center mb-8">
               <h2 className="text-2xl font-bold">Our Medical Experts</h2>
               <div className="flex gap-3">
                 <Button variant="outline" onClick={() => {
                   const currentTeam = sections.team?.members || [];
                   updateSection("team", { ...sections.team, members: [...currentTeam, { name: "", title: "", bio: "", photo: "" }] });
-                }} className="rounded-xl gap-2 border-primary/20 text-primary">
+                }} className="rounded-lg gap-2 border-primary/20 text-primary">
                   <Plus className="h-4 w-4" /> Add Member
                 </Button>
-                <Button onClick={() => handleSave("team")} disabled={loading} className="rounded-xl px-10 font-bold">
+                <Button onClick={() => handleSave("team")} disabled={loading} className="rounded-lg px-10 font-bold">
                   Save Team
                 </Button>
               </div>
@@ -185,11 +184,11 @@ export default function AdminCMS() {
             <div className="grid gap-6">
               {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
               {(sections.team?.members || []).map((m: any, idx: number) => (
-                <div key={idx} className="p-6 bg-muted/30 rounded-[2rem] border border-muted relative group">
+                <div key={idx} className="p-6 bg-muted/30 rounded-xl border relative group">
                   <Button 
                     variant="ghost" 
                     size="icon" 
-                    className="absolute -top-2 -right-2 bg-white shadow-md text-destructive hover:bg-destructive hover:text-white rounded-full opacity-0 group-hover:opacity-100 transition-all h-8 w-8"
+                    className="absolute -top-2 -right-2 bg-background border text-destructive hover:bg-destructive hover:text-white rounded-full opacity-0 group-hover:opacity-100 transition-all h-8 w-8"
                     onClick={() => {
                       // eslint-disable-next-line @typescript-eslint/no-explicit-any
                       const newMembers = sections.team.members.filter((_: any, i: number) => i !== idx);
@@ -255,10 +254,10 @@ export default function AdminCMS() {
 
         {/* Working Hours */}
         <TabsContent value="hours">
-          <Card className="p-8 shadow-elegant rounded-[2.5rem] border-0">
+          <Card className="p-8 border rounded-xl">
             <div className="flex justify-between items-center mb-8">
               <h2 className="text-2xl font-bold">Standard Clinic Hours</h2>
-              <Button onClick={() => handleSave("hours")} disabled={loading} className="rounded-xl px-10 font-bold">
+              <Button onClick={() => handleSave("hours")} disabled={loading} className="rounded-lg px-10 font-bold">
                 Save Hours
               </Button>
             </div>
@@ -293,10 +292,10 @@ export default function AdminCMS() {
 
         {/* Announcements */}
         <TabsContent value="news">
-          <Card className="p-8 shadow-elegant rounded-[2.5rem] border-0">
+          <Card className="p-8 border rounded-xl">
             <div className="flex justify-between items-center mb-8">
               <h2 className="text-2xl font-bold">Announcement Banner</h2>
-              <Button onClick={() => handleSave("announcements")} disabled={loading} className="rounded-xl px-10 font-bold">
+              <Button onClick={() => handleSave("announcements")} disabled={loading} className="rounded-lg px-10 font-bold">
                 Update Banner
               </Button>
             </div>

@@ -52,7 +52,7 @@ const AdminNotifications = () => {
         <div className="space-y-2">
           {items.map((n) => {
             const inner = (
-              <Card className={`p-4 hover:shadow-elegant transition-smooth ${!n.read ? "border-primary/40 bg-primary-soft/20" : ""}`}>
+              <Card className={`p-4 hover:bg-muted/30 transition-smooth ${!n.read ? "border-primary/40 bg-muted/50" : ""}`}>
                 <div className="flex justify-between items-start gap-3">
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 mb-1">

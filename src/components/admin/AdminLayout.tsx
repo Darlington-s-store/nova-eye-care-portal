@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import {
   LayoutDashboard, CalendarDays, Users, Star, MessageSquare, BookOpen,
-  LogOut, Home as HomeIcon, ShieldCheck, Settings, ChevronDown, Briefcase, Eye, FileText, Settings2
+  LogOut, Home as HomeIcon, ShieldCheck, Settings, ChevronDown, Briefcase, Eye, FileText, Settings2, ChevronLeft
 } from "lucide-react";
 import logo from "@/assets/logo.jpeg";
 import { NotificationBell } from "@/components/NotificationBell";
@@ -154,9 +154,22 @@ export const AdminLayout = ({ children, title, subtitle }: AdminLayoutProps) => 
           </header>
 
           <main className="flex-1 p-4 md:p-6 overflow-x-hidden">
-            <div className="mb-6">
-              <h1 className="text-2xl md:text-3xl font-bold">{title}</h1>
-              {subtitle && <p className="text-sm text-muted-foreground mt-1">{subtitle}</p>}
+            <div className="mb-6 flex flex-col gap-2">
+              {location.pathname !== "/admin" && (
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="-ml-2 w-fit h-7 px-2 text-muted-foreground hover:text-primary transition-colors flex items-center gap-1 group"
+                  onClick={() => navigate("/admin")}
+                >
+                  <ChevronLeft className="h-4 w-4 group-hover:-translate-x-0.5 transition-transform" />
+                  <span className="text-xs font-semibold tracking-tight">Back to Dashboard</span>
+                </Button>
+              )}
+              <div>
+                <h1 className="text-2xl md:text-3xl font-bold">{title}</h1>
+                {subtitle && <p className="text-sm text-muted-foreground mt-1">{subtitle}</p>}
+              </div>
             </div>
             {children}
           </main>

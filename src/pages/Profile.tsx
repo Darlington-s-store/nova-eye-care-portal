@@ -52,7 +52,7 @@ const Profile = () => {
 
   return (
     <Layout>
-      <section className="bg-hero-gradient text-primary-foreground">
+      <section className="bg-primary text-primary-foreground border-b shadow-sm">
         <div className="container py-12">
           <Link to="/dashboard" className="inline-flex items-center gap-1 text-sm opacity-90 hover:opacity-100 mb-3">
             <ArrowLeft className="h-4 w-4" /> Back to dashboard
@@ -63,7 +63,7 @@ const Profile = () => {
       </section>
 
       <section className="container py-10 max-w-2xl">
-        <Card className="p-6 md:p-8 shadow-card">
+        <Card className="p-6 md:p-8 border shadow-sm rounded-xl">
           {loading ? (
             <div className="flex justify-center py-10"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
           ) : (
@@ -104,7 +104,7 @@ const Profile = () => {
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">Email cannot be changed from here. Contact us if you need to update it.</p>
               </div>
-              <Button type="submit" variant="hero" size="lg" disabled={saving}>
+              <Button type="submit" size="lg" disabled={saving} className="rounded-lg font-bold">
                 {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Save className="h-4 w-4" /> Save changes</>}
               </Button>
             </form>

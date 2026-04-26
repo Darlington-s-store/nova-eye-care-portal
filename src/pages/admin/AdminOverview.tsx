@@ -17,7 +17,14 @@ type Stats = {
 
 const AdminOverview = () => {
   const [stats, setStats] = useState<Stats | null>(null);
-  const [recent, setRecent] = useState<any[]>([]);
+  const [recent, setRecent] = useState<{
+    id: string;
+    full_name: string;
+    service: string;
+    appointment_date: string;
+    appointment_time: string;
+    status: string;
+  }[]>([]);
 
   useEffect(() => {
     (async () => {
@@ -58,9 +65,9 @@ const AdminOverview = () => {
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5 mb-8">
             {cards.map((c) => (
               <Link key={c.label} to={c.link}>
-                <Card className="p-5 hover:shadow-elegant transition-smooth h-full">
+                <Card className="p-5 border hover:bg-muted/30 transition-colors h-full">
                   <div className="flex items-center justify-between mb-3">
-                    <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-soft text-primary">
+                    <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted text-primary border">
                       <c.icon className="h-4 w-4" />
                     </span>
                   </div>
@@ -71,7 +78,7 @@ const AdminOverview = () => {
             ))}
           </div>
 
-          <Card className="p-5 md:p-6 shadow-card">
+          <Card className="p-5 md:p-6 border shadow-sm">
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-semibold text-lg">Recent appointments</h2>
               <Button asChild variant="ghost" size="sm">

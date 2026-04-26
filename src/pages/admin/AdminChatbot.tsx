@@ -73,7 +73,7 @@ const AdminChatbot = () => {
         <div className="lg:col-span-2 space-y-3">
           <div className="flex justify-between items-center mb-1">
             <h2 className="font-semibold flex items-center gap-2"><BookOpen className="h-4 w-4 text-primary" /> {items.length} entries</h2>
-            <Button size="sm" variant="hero" onClick={() => setEditing({ question: "", answer: "", category: "", active: true })}>
+            <Button size="sm" onClick={() => setEditing({ question: "", answer: "", category: "", active: true })}>
               <Plus className="h-4 w-4" /> Add entry
             </Button>
           </div>
@@ -105,7 +105,7 @@ const AdminChatbot = () => {
         </div>
 
         <div>
-          <Card className="p-5 sticky top-20 shadow-card">
+          <Card className="p-5 sticky top-20 border shadow-sm">
             <h3 className="font-semibold mb-4">{editing?.id ? "Edit entry" : editing ? "New entry" : "Editor"}</h3>
             {!editing ? (
               <p className="text-sm text-muted-foreground">Select an entry or click "Add entry" to start.</p>
@@ -128,8 +128,8 @@ const AdminChatbot = () => {
                   <Label>Active</Label>
                 </div>
                 <div className="flex gap-2 pt-2">
-                  <Button onClick={save} variant="hero" className="flex-1" disabled={saving}>
-                    {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save"}
+                  <Button onClick={save} className="flex-1" disabled={saving}>
+                    {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save entry"}
                   </Button>
                   <Button variant="outline" onClick={() => setEditing(null)}>Cancel</Button>
                 </div>

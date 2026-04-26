@@ -143,7 +143,7 @@ const Dashboard = () => {
 
   return (
     <Layout>
-      <section className="bg-hero-gradient text-primary-foreground">
+      <section className="bg-primary text-primary-foreground border-b shadow-sm">
         <div className="container py-12 flex flex-wrap gap-4 items-center justify-between">
           <div>
             <p className="text-sm opacity-90 mb-1">Welcome back,</p>
@@ -151,12 +151,12 @@ const Dashboard = () => {
           </div>
           <div className="flex gap-2 items-center">
             {isAdmin && (
-              <Button asChild variant="outline" className="bg-white/10 border-white/40 text-primary-foreground hover:bg-white/20 hover:text-primary-foreground">
+              <Button asChild variant="secondary" className="font-bold">
                 <Link to="/admin"><ShieldCheck className="h-4 w-4" /> Admin</Link>
               </Button>
             )}
-            <Button asChild variant="outline" className="bg-white/10 border-white/40 text-primary-foreground hover:bg-white/20 hover:text-primary-foreground">
-              <Link to="/book"><CalendarPlus className="h-4 w-4" /> New</Link>
+            <Button asChild variant="secondary" className="font-bold">
+              <Link to="/book"><CalendarPlus className="h-4 w-4" /> New Booking</Link>
             </Button>
           </div>
         </div>
@@ -164,21 +164,20 @@ const Dashboard = () => {
 
       {!loading && profile && !profile.registration_completed && (
         <section className="container mt-8 animate-fade-in">
-          <Card className="p-6 bg-amber-50 border-amber-100 border-2 rounded-[2rem] shadow-lg shadow-amber-900/5 relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-amber-200/20 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl group-hover:bg-amber-200/40 transition-colors" />
+          <Card className="p-6 bg-amber-50 border-amber-200 border-2 rounded-xl relative overflow-hidden">
             <div className="flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
               <div className="flex items-center gap-4">
-                <div className="h-14 w-14 bg-amber-100 rounded-2xl flex items-center justify-center text-amber-700 shadow-inner">
+                <div className="h-14 w-14 bg-amber-100 rounded-lg flex items-center justify-center text-amber-700">
                   <User className="h-7 w-7" />
                 </div>
                 <div>
                   <h2 className="text-xl font-bold text-amber-900">Complete Your Patient Profile</h2>
                   <p className="text-amber-700/80 text-sm max-w-md">
-                    Finish your registration to help our clinical team provide you with the best possible personalized care.
+                    Finish your registration to help our clinical team provide you with personalized care.
                   </p>
                 </div>
               </div>
-              <Button asChild size="lg" className="bg-amber-600 hover:bg-amber-700 text-white rounded-xl px-8 font-bold gap-2 w-full md:w-auto shadow-lg shadow-amber-600/20">
+              <Button asChild size="lg" className="bg-amber-600 hover:bg-amber-700 text-white rounded-lg px-8 font-bold gap-2 w-full md:w-auto shadow-sm">
                 <Link to="/register-patient">Finish Registration <ArrowRight className="h-4 w-4" /></Link>
               </Button>
             </div>
@@ -216,29 +215,28 @@ const Dashboard = () => {
 
           <Card className="p-6">
             <div className="flex items-center gap-3 mb-3">
-              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-soft text-primary">
+              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-muted text-primary border">
                 <Star className="h-5 w-5" />
               </span>
               <h2 className="font-semibold">Share experience</h2>
             </div>
             <p className="text-sm text-muted-foreground mb-4">Help others by leaving a review.</p>
-            <Button asChild variant="hero" size="sm" className="w-full">
+            <Button asChild size="sm" className="w-full">
               <Link to="/reviews">Write a review</Link>
             </Button>
           </Card>
 
-          <Card className="p-6 bg-primary/5 border-primary/10 rounded-[2rem] shadow-sm relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-xl" />
+          <Card className="p-6 bg-muted/30 border rounded-xl shadow-sm relative overflow-hidden group">
             <div className="flex items-center gap-3 mb-4 relative z-10">
-              <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-primary shadow-sm group-hover:scale-110 transition-transform">
+              <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-background text-primary border shadow-sm transition-transform">
                 <History className="h-5 w-5" />
               </span>
               <h2 className="font-bold">Medical History</h2>
             </div>
             <p className="text-xs text-muted-foreground mb-5 relative z-10 leading-relaxed">
-              Update your ocular and systemic conditions to help us personalize your care.
+              Update your clinical profile to help us personalize your care.
             </p>
-            <Button asChild variant="outline" size="sm" className="w-full rounded-xl bg-white border-primary/20 hover:bg-primary hover:text-white transition-all relative z-10">
+            <Button asChild variant="outline" size="sm" className="w-full rounded-lg bg-background border transition-all relative z-10">
               <Link to="/medical-history" className="gap-2">Manage History <ArrowRight className="h-4 w-4" /></Link>
             </Button>
           </Card>
@@ -250,10 +248,10 @@ const Dashboard = () => {
             {loading ? (
               <div className="flex justify-center py-10"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
             ) : upcoming.length === 0 ? (
-              <Card className="p-8 text-center">
+              <Card className="p-8 text-center border-dashed border-2">
                 <Calendar className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
                 <p className="text-muted-foreground mb-4">No upcoming appointments.</p>
-                <Button asChild variant="hero"><Link to="/book">Book your first appointment</Link></Button>
+                <Button asChild><Link to="/book">Book your first appointment</Link></Button>
               </Card>
             ) : (
               <div className="space-y-3">
@@ -285,20 +283,20 @@ const Dashboard = () => {
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
                 {screenings.map((s) => (
-                  <Card key={s.id} className="p-6 rounded-[2rem] border-0 shadow-sm hover:shadow-elegant transition-shadow bg-white relative group">
+                  <Card key={s.id} className="p-6 rounded-xl border shadow-sm hover:bg-muted/10 transition-colors bg-white relative group">
                     <div className="flex flex-col gap-4">
                       <div className="flex justify-between items-start">
-                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground bg-muted px-2.5 py-1 rounded-md">
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground bg-muted px-2.5 py-1 rounded-md">
                           {new Date(s.screening_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
                         </span>
-                        <div className="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <Badge variant="outline" className="text-[10px] font-bold border-primary/20 text-primary">{s.va_right_eye || '-'}</Badge>
-                          <Badge variant="outline" className="text-[10px] font-bold border-primary/20 text-primary">{s.va_left_eye || '-'}</Badge>
+                        <div className="flex gap-1.5 transition-opacity">
+                          <Badge variant="outline" className="text-[10px] font-bold border-muted text-primary">{s.va_right_eye || '-'}</Badge>
+                          <Badge variant="outline" className="text-[10px] font-bold border-muted text-primary">{s.va_left_eye || '-'}</Badge>
                         </div>
                       </div>
                       <div>
                         <h4 className="font-bold text-foreground mb-1">Clinical Impression</h4>
-                        <p className="text-sm text-muted-foreground line-clamp-2 italic leading-relaxed">"{s.diagnosis || "Consultation record saved."}"</p>
+                        <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">"{s.diagnosis || "Consultation record saved."}"</p>
                       </div>
                     </div>
                   </Card>

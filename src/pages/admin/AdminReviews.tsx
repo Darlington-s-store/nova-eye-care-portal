@@ -112,7 +112,7 @@ const ReviewCard = ({ r, approved, onApprove, onUnapprove, onRemove }: {
         <p className="text-xs text-muted-foreground">{new Date(r.created_at).toLocaleString("en-GB")}</p>
       </div>
       <div className="flex gap-2 shrink-0">
-        {!approved && onApprove && <Button size="sm" variant="hero" onClick={() => onApprove(r)}><Check className="h-4 w-4" /> Approve</Button>}
+        {!approved && onApprove && <Button size="sm" onClick={() => onApprove(r)}><Check className="h-4 w-4" /> Approve</Button>}
         {approved && onUnapprove && <Button size="sm" variant="outline" onClick={() => onUnapprove(r)}><X className="h-4 w-4" /> Unpublish</Button>}
         <Button size="sm" variant="outline" className="text-destructive" onClick={() => onRemove(r.id)}><Trash2 className="h-4 w-4" /></Button>
       </div>

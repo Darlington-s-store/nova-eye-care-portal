@@ -136,14 +136,12 @@ const Auth = () => {
     <div className="min-h-screen flex flex-col lg:flex-row">
       {/* Left: Image / brand panel */}
       <aside
-        className="relative hidden lg:flex lg:w-1/2 items-end p-12 text-primary-foreground overflow-hidden"
-        style={{ backgroundImage: `url(${authBg})`, backgroundSize: "cover", backgroundPosition: "center" }}
+        className="relative hidden lg:flex lg:w-1/2 items-end p-12 text-primary-foreground overflow-hidden bg-primary"
       >
-        <div className="absolute inset-0 bg-hero-gradient opacity-90" />
         <div className="absolute inset-0 [background-image:radial-gradient(circle_at_30%_30%,white_1px,transparent_1px)] [background-size:36px_36px] opacity-10" />
         <div className="relative z-10 max-w-md space-y-6 animate-fade-in-up">
           <Link to="/" className="inline-flex items-center gap-3 font-bold text-xl">
-            <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-white overflow-hidden shadow-elegant">
+            <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-white overflow-hidden shadow-sm border">
               <img src={logo} alt="NOVA Eye Care Logo" className="h-full w-full object-contain p-1" />
             </span>
             NOVA Eye Care
@@ -161,7 +159,7 @@ const Auth = () => {
               { icon: Sparkles, t: "Personalized care reminders" },
             ].map((f) => (
               <li key={f.t} className="flex items-center gap-3 opacity-95">
-                <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/15 backdrop-blur">
+                <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/20 border border-white/30">
                   <f.icon className="h-4 w-4" />
                 </span>
                 {f.t}
@@ -173,7 +171,7 @@ const Auth = () => {
 
       {/* Right: Form panel */}
       <main
-        className="relative flex-1 flex items-center justify-center p-6 lg:p-12 bg-soft-gradient"
+        className="relative flex-1 flex items-center justify-center p-6 lg:p-12 bg-muted/30"
       >
         {/* Mobile background tint */}
         <div
@@ -183,14 +181,14 @@ const Auth = () => {
         <div className="relative w-full max-w-md">
           <div className="lg:hidden text-center mb-6">
             <Link to="/" className="inline-flex items-center gap-3 text-primary font-bold text-xl">
-              <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-white overflow-hidden shadow-elegant">
+              <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-white overflow-hidden shadow-sm border">
                 <img src={logo} alt="NOVA Eye Care Logo" className="h-full w-full object-contain p-1" />
               </span>
               NOVA Eye Care
             </Link>
           </div>
 
-          <Card className="p-7 md:p-8 shadow-elegant border-border/60 backdrop-blur bg-card/95">
+          <Card className="p-7 md:p-8 shadow-sm border bg-card">
             <div className="mb-6">
               {view === "auth" ? (
                 <>
@@ -245,7 +243,7 @@ const Auth = () => {
                         </button>
                       </div>
                     </div>
-                    <Button type="submit" variant="hero" size="lg" className="w-full" disabled={loading}>
+                    <Button type="submit" size="lg" className="w-full rounded-lg font-bold" disabled={loading}>
                       {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Sign In"}
                     </Button>
                     <div className="flex justify-between text-sm pt-1">
@@ -299,7 +297,7 @@ const Auth = () => {
                         </button>
                       </div>
                     </div>
-                    <Button type="submit" variant="hero" size="lg" className="w-full" disabled={loading}>
+                    <Button type="submit" size="lg" className="w-full rounded-lg font-bold" disabled={loading}>
                       {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Create Account"}
                     </Button>
                     <p className="text-center text-sm text-muted-foreground pt-2">
@@ -338,9 +336,8 @@ const Auth = () => {
 
                 <Button 
                   onClick={() => onVerify()} 
-                  variant="hero" 
                   size="lg" 
-                  className="w-full" 
+                  className="w-full rounded-lg font-bold" 
                   disabled={loading || otp.length < 6}
                 >
                   {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Verify Account"}

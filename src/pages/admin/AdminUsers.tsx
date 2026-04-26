@@ -119,7 +119,7 @@ const AdminUsers = () => {
                 <Card key={user.id} className="p-5 hover:shadow-md transition-all border-border/40 group">
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                     <div className="flex items-center gap-4">
-                      <div className="h-14 w-14 rounded-full bg-primary-soft flex items-center justify-center text-primary border border-primary/10">
+                      <div className="h-14 w-14 rounded-full bg-muted flex items-center justify-center text-primary border border-border">
                         <User className="h-6 w-6" />
                       </div>
                       <div>
@@ -191,13 +191,12 @@ const AdminUsers = () => {
       </div>
 
       <Dialog open={!!selectedUser} onOpenChange={(o) => !o && setSelectedUser(null)}>
-        <DialogContent className="max-w-2xl p-0 overflow-hidden rounded-[2rem] border-0">
+        <DialogContent className="max-w-2xl p-0 overflow-hidden rounded-xl border-0">
           {selectedUser && (
-            <div className="flex flex-col h-full bg-soft-gradient">
-              <DialogHeader className="p-8 pb-4 bg-hero-gradient text-primary-foreground relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full translate-x-12 -translate-y-6 blur-2xl" />
+            <div className="bg-background">
+              <DialogHeader className="p-8 pb-4 bg-primary text-primary-foreground relative overflow-hidden">
                 <div className="flex items-center gap-4 relative z-10">
-                  <div className="h-16 w-16 bg-white/20 backdrop-blur-lg rounded-2xl flex items-center justify-center border border-white/20 shadow-xl">
+                  <div className="h-16 w-16 bg-white/10 rounded-xl flex items-center justify-center border border-white/20">
                     <User className="h-8 w-8" />
                   </div>
                   <div>
@@ -206,11 +205,10 @@ const AdminUsers = () => {
                   </div>
                 </div>
               </DialogHeader>
-
-              <div className="p-8 grid gap-8 md:grid-cols-2 overflow-y-auto max-h-[70vh]">
+              <div className="p-8 grid gap-8 md:grid-cols-2 overflow-y-auto max-h-[70vh] bg-background">
                 <div className="space-y-6">
                   <section className="space-y-3">
-                    <div className="flex items-center gap-2 font-bold text-primary text-xs uppercase tracking-widest bg-primary/5 py-1 px-3 rounded-full w-fit">
+                    <div className="flex items-center gap-2 font-bold text-primary text-xs uppercase tracking-widest bg-muted py-1 px-3 rounded-full w-fit">
                       <Info className="h-3 w-3" /> Basic Info
                     </div>
                     <dl className="grid grid-cols-2 gap-4">
@@ -226,7 +224,7 @@ const AdminUsers = () => {
                   </section>
 
                   <section className="space-y-3">
-                    <div className="flex items-center gap-2 font-bold text-primary text-xs uppercase tracking-widest bg-primary/5 py-1 px-3 rounded-full w-fit">
+                    <div className="flex items-center gap-2 font-bold text-primary text-xs uppercase tracking-widest bg-muted py-1 px-3 rounded-full w-fit">
                       <MapPin className="h-3 w-3" /> Address Info
                     </div>
                     <div>
@@ -236,10 +234,10 @@ const AdminUsers = () => {
                   </section>
 
                   <section className="space-y-3">
-                    <div className="flex items-center gap-2 font-bold text-primary text-xs uppercase tracking-widest bg-primary/5 py-1 px-3 rounded-full w-fit">
+                    <div className="flex items-center gap-2 font-bold text-primary text-xs uppercase tracking-widest py-1 px-3 rounded-full w-fit bg-muted">
                       <PhoneCall className="h-3 w-3" /> Emergency Contact
                     </div>
-                    <div className="bg-white/50 backdrop-blur p-4 rounded-xl border border-white/60">
+                    <div className="bg-muted/30 p-4 rounded-lg border">
                       <p className="font-bold text-sm">{selectedUser.emergency_contact_name || "Not specified"}</p>
                       <p className="text-primary font-medium text-sm mt-1 flex items-center gap-2">
                         <Phone className="h-3 w-3" /> {selectedUser.emergency_contact_phone || "—"}

@@ -111,7 +111,7 @@ const AdminSettings = () => {
 
   return (
     <AdminLayout title="Admin Settings" subtitle="Configure your administrative account and clinic-wide settings.">
-      <div className="grid gap-8 max-w-5xl pb-12">
+      <div className="grid gap-8 pb-12 w-full">
         {/* Clinic Information Segment */}
         <section className="grid lg:grid-cols-3 gap-6">
           <div className="lg:col-span-1">
@@ -121,7 +121,7 @@ const AdminSettings = () => {
             </h2>
             <p className="text-sm text-muted-foreground mt-1">Manage global details and social presence.</p>
           </div>
-          <Card className="lg:col-span-2 p-6 shadow-elegant border-border/40">
+          <Card className="lg:col-span-2 p-6 border">
             <form onSubmit={handleUpdateClinic} className="space-y-6">
               <div className="grid sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
@@ -225,14 +225,14 @@ const AdminSettings = () => {
                 </div>
               </div>
 
-              <div className="pt-6 mt-6 border-t bg-orange-50/30 -mx-6 px-6 py-4 rounded-b-xl border-t-orange-100">
+              <div className="pt-6 mt-6 border-t bg-muted/20 -mx-6 px-6 py-4 rounded-b-xl">
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <Label className="text-orange-800 font-bold flex items-center gap-2 text-base">
-                      <ShieldAlert className="h-5 w-5" />
+                    <Label className="font-bold flex items-center gap-2 text-base">
+                      <ShieldAlert className="h-5 w-5 text-muted-foreground" />
                       Maintenance Mode
                     </Label>
-                    <p className="text-xs text-orange-700/70">
+                    <p className="text-xs text-muted-foreground">
                       When active, the entire website will be hidden behind a maintenance screen. 
                       Only Admins can still access the dashboard.
                     </p>
@@ -241,11 +241,11 @@ const AdminSettings = () => {
                     <input 
                       type="checkbox" 
                       id="maint_mode"
-                      className="h-5 w-5 accent-orange-600 rounded" 
+                      className="h-5 w-5 accent-primary rounded" 
                       checked={clinic.maintenance_mode}
                       onChange={(e) => setClinic({ ...clinic, maintenance_mode: e.target.checked })}
                     />
-                    <Label htmlFor="maint_mode" className="text-orange-900 font-bold cursor-pointer">
+                    <Label htmlFor="maint_mode" className="font-bold cursor-pointer">
                       {clinic.maintenance_mode ? "ENABLED" : "OFF"}
                     </Label>
                   </div>
@@ -268,7 +268,7 @@ const AdminSettings = () => {
             </h2>
             <p className="text-sm text-muted-foreground mt-1">Your personal identity in the admin center.</p>
           </div>
-          <Card className="lg:col-span-2 p-6 shadow-elegant border-border/40">
+          <Card className="lg:col-span-2 p-6 border shadow-sm">
             <form onSubmit={handleUpdateProfile} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="full_name">Full Name</Label>
@@ -311,7 +311,7 @@ const AdminSettings = () => {
             <h2 className="text-lg font-semibold mb-1">Security</h2>
             <p className="text-sm text-muted-foreground">Manage your access credentials.</p>
           </div>
-          <Card className="md:col-span-2 p-6 shadow-card">
+          <Card className="md:col-span-2 p-6 border shadow-sm">
             <form onSubmit={handleUpdatePassword} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="new_password">New Password</Label>

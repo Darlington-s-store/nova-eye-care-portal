@@ -88,9 +88,9 @@ export default function MedicalHistoryPage() {
 
   return (
     <Layout>
-      <div className="bg-primary-soft border-b border-primary/10">
+      <div className="bg-muted/50 border-b">
         <div className="container py-12">
-          <Button asChild variant="ghost" className="mb-6 rounded-xl hover:bg-white/50">
+          <Button asChild variant="ghost" className="mb-6 rounded-lg">
             <Link to="/dashboard" className="gap-2"><ChevronLeft className="h-4 w-4" /> Back to Dashboard</Link>
           </Button>
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
@@ -100,7 +100,7 @@ export default function MedicalHistoryPage() {
                 Keep your ocular and systemic health information up to date to help our specialists provide precise care.
               </p>
             </div>
-            <Button onClick={handleSave} disabled={loading} size="lg" className="rounded-2xl px-10 font-bold gap-2 shadow-lg shadow-primary/20 transition-all active:scale-95">
+            <Button onClick={handleSave} disabled={loading} size="lg" className="rounded-lg px-10 font-bold gap-2 shadow-sm">
               {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Save className="h-5 w-5" />} Save Health Profile
             </Button>
           </div>
@@ -111,8 +111,7 @@ export default function MedicalHistoryPage() {
         <div className="grid gap-10 lg:grid-cols-12 max-w-6xl mx-auto">
           {/* Main Form */}
           <div className="lg:col-span-8 space-y-8">
-            <Card className="p-8 rounded-[2.5rem] border-0 shadow-elegant overflow-hidden relative">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl" />
+            <Card className="p-8 rounded-xl border shadow-sm overflow-hidden relative">
               <div className="space-y-8 relative z-10">
                 
                 <Section 
@@ -166,7 +165,7 @@ export default function MedicalHistoryPage() {
 
           {/* Sidebar / Info */}
           <div className="lg:col-span-4 space-y-6">
-            <Card className="p-8 bg-hero-gradient text-white rounded-[2rem] shadow-glow border-0">
+            <Card className="p-8 bg-primary text-primary-foreground rounded-xl shadow-sm border">
               <h3 className="font-bold text-xl mb-4 flex items-center gap-2">
                 <CheckCircle2 className="h-5 w-5" /> Why this matters
               </h3>
@@ -193,7 +192,7 @@ function Section({ icon: Icon, title, description, value, onChange, placeholder 
   return (
     <div className="space-y-4 group">
       <div className="flex items-center gap-3">
-        <div className="h-10 w-10 bg-primary-soft text-primary rounded-xl flex items-center justify-center transition-transform group-focus-within:scale-110">
+        <div className="h-10 w-10 bg-muted text-primary rounded-lg border flex items-center justify-center">
           <Icon className="h-5 w-5" />
         </div>
         <div>
@@ -203,7 +202,7 @@ function Section({ icon: Icon, title, description, value, onChange, placeholder 
       </div>
       <Textarea 
         placeholder={placeholder}
-        className="rounded-2xl border-border/40 focus:ring-primary/20 min-h-[100px] text-base"
+        className="rounded-lg border focus:ring-1 focus:ring-primary min-h-[100px] text-base"
         value={value}
         onChange={(e) => onChange(e.target.value)}
       />

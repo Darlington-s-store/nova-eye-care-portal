@@ -119,7 +119,7 @@ export default function RegisterPatient() {
 
   if (fetchingProfile) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-soft-gradient">
+      <div className="min-h-screen flex items-center justify-center bg-muted/30">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="h-10 w-10 animate-spin text-primary opacity-50" />
           <p className="font-medium animate-pulse">Setting up your profile...</p>
@@ -132,21 +132,21 @@ export default function RegisterPatient() {
 
   return (
     <Layout>
-      <div className="min-h-[80vh] flex items-center justify-center py-12 px-4 bg-soft-gradient">
+      <div className="min-h-[80vh] flex items-center justify-center py-12 px-4 bg-muted/10">
         <div className="w-full max-w-4xl grid md:grid-cols-12 gap-8 items-start">
           
           {/* Progress Sidebar */}
           <div className="md:col-span-4 space-y-6">
-            <div className="bg-white/40 backdrop-blur-xl p-8 rounded-[2.5rem] border border-white/60 shadow-elegant">
-              <h1 className="text-2xl font-bold mb-8">Patient Registration</h1>
+            <div className="bg-background p-8 rounded-xl border shadow-sm">
+              <h1 className="text-xl font-bold mb-8">Patient Registration</h1>
               <div className="space-y-8 relative">
                 {/* Vertical Line */}
                 <div className="absolute left-[17px] top-4 bottom-4 w-0.5 bg-muted/30 -z-10" />
                 
                 {STEPS.map((s, idx) => (
                   <div key={s.id} className="flex items-center gap-4 group">
-                    <div className={`h-9 w-9 rounded-full flex items-center justify-center transition-all duration-500 border-2 ${
-                      idx <= currentStep ? "bg-primary border-primary text-white scale-110 shadow-lg shadow-primary/20" : "bg-white border-muted text-muted-foreground"
+                    <div className={`h-9 w-9 rounded-full flex items-center justify-center transition-all duration-300 border-2 ${
+                      idx <= currentStep ? "bg-primary border-primary text-white scale-105" : "bg-background border-muted text-muted-foreground"
                     }`}>
                       {idx < currentStep ? <CheckCircle2 className="h-5 w-5" /> : <s.icon className="h-4 w-4" />}
                     </div>
@@ -159,20 +159,19 @@ export default function RegisterPatient() {
               </div>
             </div>
 
-            <div className="hidden md:block p-6 bg-primary/5 rounded-3xl border border-primary/10">
+            <div className="hidden md:block p-6 bg-muted rounded-xl border">
               <div className="flex items-center gap-3 text-primary font-bold mb-2">
                 <ShieldCheck className="h-5 w-5" />
                 <span className="text-sm">Secure & Private</span>
               </div>
-              <p className="text-xs leading-relaxed text-muted-foreground italic">
+              <p className="text-xs leading-relaxed text-muted-foreground">
                 Your medical data is encrypted and accessible only by clinical staff. We comply with all data protection standards in Ghana.
               </p>
             </div>
           </div>
 
           {/* Form Content */}
-          <Card className="md:col-span-8 p-8 md:p-12 shadow-2xl rounded-[3rem] border-0 overflow-hidden relative group">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl pointer-events-none" />
+          <Card className="md:col-span-8 p-8 md:p-12 shadow-sm rounded-xl border relative group">
             
             <AnimatePresence mode="wait">
               <motion.div
@@ -356,7 +355,7 @@ export default function RegisterPatient() {
                     <Button 
                       onClick={handleSubmit} 
                       disabled={loading}
-                      className="bg-hero-gradient border-0 px-10 h-12 rounded-xl font-bold shadow-lg shadow-primary/20 gap-2"
+                      className="px-10 h-12 rounded-lg font-bold gap-2"
                     >
                       {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
                       Complete Registration
