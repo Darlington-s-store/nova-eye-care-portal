@@ -40,6 +40,7 @@ export default function RegisterPatient() {
     full_name: "",
     date_of_birth: "",
     gender: "",
+    nationality: "",
     phone: "",
     email: "",
     address: "",
@@ -76,6 +77,7 @@ export default function RegisterPatient() {
           full_name: profile.full_name || "",
           phone: profile.phone || "",
           email: user.email || "",
+          nationality: (profile as any).nationality || "",
         }));
       }
       setFetchingProfile(false);
@@ -233,6 +235,15 @@ export default function RegisterPatient() {
                             </SelectContent>
                           </Select>
                         </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-sm font-bold ml-1">Nationality</Label>
+                        <Input 
+                          value={form.nationality}
+                          onChange={(e) => setForm({...form, nationality: e.target.value})}
+                          placeholder="e.g. Ghanaian"
+                          className="h-12 rounded-xl"
+                        />
                       </div>
                     </div>
                   )}

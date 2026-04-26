@@ -9,6 +9,7 @@ import {
   DialogDescription, DialogFooter 
 } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
+import { generateScreeningPDF } from "@/lib/pdf-utils";
 import { toast } from "sonner";
 import { 
   Eye, 
@@ -32,6 +33,7 @@ type Screening = {
   va_left_eye: string;
   iop_right: number;
   iop_left: number;
+  recommended_followup: string;
   is_visible_to_patient: boolean;
   profiles: {
     full_name: string;
@@ -237,7 +239,23 @@ export default function AdminScreenings() {
                       </td>
                       <td className="px-6 py-5 text-right">
                         <div className="flex justify-end gap-2 text-right">
-                          <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl text-primary hover:bg-primary/10 transition-all opacity-0 group-hover:opacity-100"><Download className="h-4 w-4" /></Button>
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-9 w-9 rounded-xl text-primary hover:bg-primary/10 transition-all opacity-0 group-hover:opacity-100"
+                            onClick={() => generateScreeningPDF({
+                              patient_name: s.profiles.full_name,
+                              screening_date: s.screening_date,
+                              va_right: s.va_right_eye,
+                              va_left: s.va_left_eye,
+                              iop_right: s.iop_right,
+                              iop_left: s.iop_left,
+                              diagnosis: s.diagnosis,
+                              followup: s.recommended_followup
+                            })}
+                          >
+                            <Download className="h-4 w-4" />
+                          </Button>
                           <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl text-primary hover:bg-primary/10 transition-all opacity-0 group-hover:opacity-100"><FileText className="h-4 w-4" /></Button>
                         </div>
                       </td>

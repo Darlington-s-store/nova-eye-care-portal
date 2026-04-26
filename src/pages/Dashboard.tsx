@@ -15,7 +15,7 @@ import { TIME_SLOTS_WEEKDAY, TIME_SLOTS_SATURDAY } from "@/lib/clinic";
 import { toast } from "sonner";
 import {
   CalendarPlus, CalendarX, Calendar, Clock, FileText, Loader2,
-  User, Star, RefreshCw, ShieldCheck, ArrowRight
+  User, Star, RefreshCw, ShieldCheck, ArrowRight, History, Eye
 } from "lucide-react";
 
 type Appointment = {
@@ -35,6 +35,14 @@ type Profile = {
   registration_completed: boolean | null;
 };
 
+type Screening = {
+  id: string;
+  screening_date: string;
+  diagnosis: string;
+  va_right_eye: string;
+  va_left_eye: string;
+};
+
 const statusStyles: Record<Appointment["status"], string> = {
   pending: "bg-yellow-100 text-yellow-900 hover:bg-yellow-100",
   confirmed: "bg-primary-soft text-primary hover:bg-primary-soft",
@@ -47,6 +55,7 @@ const Dashboard = () => {
   const { user, isAdmin, loading: authLoading } = useAuth();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [screenings, setScreenings] = useState<Screening[]>([]);
   const [loading, setLoading] = useState(true);
   const [reschedule, setReschedule] = useState<Appointment | null>(null);
   const [rNew, setRNew] = useState({ date: "", time: "" });
@@ -56,13 +65,15 @@ const Dashboard = () => {
     if (!user) return;
     (async () => {
       setLoading(true);
-      const [{ data: appts }, { data: prof }] = await Promise.all([
+      const [{ data: appts }, { data: prof }, { data: screens }] = await Promise.all([
         supabase.from("appointments").select("*").eq("user_id", user.id).order("appointment_date", { ascending: false }),
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (supabase as any).from("profiles").select("full_name, phone, email, registration_completed").eq("id", user.id).single(),
+        supabase.from("eye_screenings").select("id, screening_date, diagnosis, va_right_eye, va_left_eye").eq("patient_id", user.id).eq("is_visible_to_patient", true).order("screening_date", { ascending: false })
       ]);
       setAppointments((appts as Appointment[]) || []);
       setProfile(prof as Profile);
+      setScreenings((screens as Screening[]) || []);
       setLoading(false);
     })();
 
@@ -201,18 +212,24 @@ const Dashboard = () => {
             </Button>
           </Card>
 
-          <Card className="p-6">
-            <div className="flex items-center gap-3 mb-3">
-              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-soft text-primary">
-                <Star className="h-5 w-5" />
-              </span>
-              <h2 className="font-semibold">Share your experience</h2>
-            </div>
-            <p className="text-sm text-muted-foreground mb-4">
-              Help others by leaving a review of your visit.
-            </p>
             <Button asChild variant="hero" size="sm" className="w-full">
               <Link to="/reviews">Write a review</Link>
+            </Button>
+          </Card>
+
+          <Card className="p-6 bg-primary/5 border-primary/10 rounded-[2rem] shadow-sm relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-xl" />
+            <div className="flex items-center gap-3 mb-4 relative z-10">
+              <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-primary shadow-sm group-hover:scale-110 transition-transform">
+                <History className="h-5 w-5" />
+              </span>
+              <h2 className="font-bold">Medical History</h2>
+            </div>
+            <p className="text-xs text-muted-foreground mb-5 relative z-10 leading-relaxed">
+              Update your ocular and systemic conditions to help us personalize your care.
+            </p>
+            <Button asChild variant="outline" size="sm" className="w-full rounded-xl bg-white border-primary/20 hover:bg-primary hover:text-white transition-all relative z-10">
+              <Link to="/medical-history" className="gap-2">Manage History <ArrowRight className="h-4 w-4" /></Link>
             </Button>
           </Card>
         </div>
@@ -242,6 +259,40 @@ const Dashboard = () => {
               <h2 className="font-bold text-xl mb-4">Past & Cancelled</h2>
               <div className="space-y-3">
                 {past.map((a) => <AppointmentCard key={a.id} a={a} onCancel={cancelAppointment} onReschedule={() => {}} />)}
+              </div>
+            </div>
+          )}
+
+          {screenings.length > 0 && (
+            <div className="pt-4">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="font-bold text-xl flex items-center gap-2">
+                  <Eye className="h-5 w-5 text-primary" /> Screening Results
+                </h2>
+                <Badge variant="secondary" className="rounded-lg bg-primary/10 text-primary border-0 font-bold px-3 py-1">
+                  Latest First
+                </Badge>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                {screenings.map((s) => (
+                  <Card key={s.id} className="p-6 rounded-[2rem] border-0 shadow-sm hover:shadow-elegant transition-shadow bg-white relative group">
+                    <div className="flex flex-col gap-4">
+                      <div className="flex justify-between items-start">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground bg-muted px-2.5 py-1 rounded-md">
+                          {new Date(s.screening_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        </span>
+                        <div className="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Badge variant="outline" className="text-[10px] font-bold border-primary/20 text-primary">{s.va_right_eye || '-'}</Badge>
+                          <Badge variant="outline" className="text-[10px] font-bold border-primary/20 text-primary">{s.va_left_eye || '-'}</Badge>
+                        </div>
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-foreground mb-1">Clinical Impression</h4>
+                        <p className="text-sm text-muted-foreground line-clamp-2 italic leading-relaxed">"{s.diagnosis || "Consultation record saved."}"</p>
+                      </div>
+                    </div>
+                  </Card>
+                ))}
               </div>
             </div>
           )}
