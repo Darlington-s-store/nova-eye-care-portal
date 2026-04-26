@@ -6,12 +6,13 @@ import {
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import {
-  LayoutDashboard, CalendarDays, Users, Star, MessageSquare, BookOpen,
-  LogOut, Home as HomeIcon, ShieldCheck, Settings, User, ChevronDown, Briefcase
+import { 
+  LayoutDashboard, CalendarDays, Users, Star, MessageSquare, BookOpen, 
+  LogOut, Home as HomeIcon, ShieldCheck, Settings, User, ChevronDown, List, Eye, Settings2, FileText, Briefcase
 } from "lucide-react";
 import logo from "@/assets/logo.jpeg";
 import { NotificationBell } from "@/components/NotificationBell";
+import { useState, useEffect } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,36 +22,71 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-const items = [
+interface SidebarItem {
+  to: string;
+  label: string;
+  icon: any; // Lucide icon
+  end?: boolean;
+}
+
+const commonItems: SidebarItem[] = [
   { to: "/admin", label: "Overview", icon: LayoutDashboard, end: true },
   { to: "/admin/appointments", label: "Appointments", icon: CalendarDays },
-  { to: "/admin/reviews", label: "Reviews", icon: Star },
-  { to: "/admin/users", label: "Users", icon: Users },
-  { to: "/admin/services", label: "Services", icon: Briefcase },
+  { to: "/admin/users", label: "Patients", icon: Users },
   { to: "/admin/notifications", label: "Notifications", icon: MessageSquare },
-  { to: "/admin/chatbot", label: "Chatbot KB", icon: BookOpen },
+];
+
+const clinicalItems: SidebarItem[] = [
+  { to: "/admin/screenings", label: "Eye Screenings", icon: Eye },
+];
+
+const adminItems: SidebarItem[] = [
+  { to: "/admin/services", label: "Services CMS", icon: Briefcase },
+  { to: "/admin/cms", label: "Website CMS", icon: FileText },
+  { to: "/admin/settings", label: "System Settings", icon: Settings2 },
 ];
 
 const AdminSidebarInner = () => {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const location = useLocation();
+  const [role, setRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchRole = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { data } = await (supabase as any).from("profiles").select("role").eq("id", user.id).single();
+        setRole(data?.role || 'patient');
+      }
+    };
+    fetchRole();
+  }, []);
+
+  const items = [
+    ...commonItems,
+    ...(role === 'optometrist' || role === 'super_admin' ? clinicalItems : []),
+    ...(role === 'super_admin' ? adminItems : []),
+  ];
+
+  if (role === 'patient') return null;
 
   return (
     <Sidebar collapsible="icon">
       <SidebarContent>
         <div className={`px-4 py-5 border-b border-sidebar-border ${collapsed ? "px-2" : ""}`}>
-          <Link to="/admin" className="flex items-center gap-2 font-bold text-sidebar-primary">
+          <Link to="/admin" className="flex items-center gap-2 font-bold text-sidebar-primary shadow-sm">
             <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-white overflow-hidden shadow-card shrink-0 border border-border/10">
               <img src={logo} alt="NOVA Eye Care Logo" className="h-full w-full object-contain p-0.5" />
             </span>
-            {!collapsed && <span className="text-sm leading-tight text-foreground">NOVA <span className="block text-[10px] font-bold text-primary uppercase tracking-widest opacity-80">Admin Center</span></span>}
+            {!collapsed && <span className="text-sm leading-tight text-foreground font-serif">NOVA <span className="block text-[10px] font-bold text-primary uppercase tracking-widest opacity-80">Clinical Control</span></span>}
           </Link>
         </div>
         <SidebarGroup>
-          <SidebarGroupLabel>{!collapsed && "Manage"}</SidebarGroupLabel>
+          <SidebarGroupLabel className="px-5 text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/60 mb-2">{!collapsed && "Management Console"}</SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="px-3 gap-1">
               {items.map((it) => {
                 const isActive = it.end ? location.pathname === it.to : location.pathname.startsWith(it.to);
                 return (
@@ -59,10 +95,14 @@ const AdminSidebarInner = () => {
                       <NavLink
                         to={it.to}
                         end={it.end}
-                        className={`flex items-center gap-2 ${isActive ? "bg-sidebar-accent text-sidebar-primary font-medium" : "hover:bg-sidebar-accent/50"}`}
+                        className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-300 ${
+                          isActive 
+                            ? "bg-primary text-white shadow-lg shadow-primary/30 font-bold" 
+                            : "text-muted-foreground hover:bg-primary/10 hover:text-primary"
+                        }`}
                       >
-                        <it.icon className="h-4 w-4 shrink-0" />
-                        {!collapsed && <span>{it.label}</span>}
+                        <it.icon className={`h-5 w-5 shrink-0 ${isActive ? "text-white" : "opacity-70 group-hover:opacity-100"}`} />
+                        {!collapsed && <span className="text-sm">{it.label}</span>}
                       </NavLink>
                     </SidebarMenuButton>
                   </SidebarMenuItem>

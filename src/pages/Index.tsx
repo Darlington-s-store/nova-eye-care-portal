@@ -3,7 +3,9 @@ import { Layout } from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { SERVICES, CLINIC } from "@/lib/clinic";
+import { getCMSContent, HeroContent, Announcements } from "@/lib/cms";
 import { ApprovedReviews } from "@/components/ApprovedReviews";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
   Eye, CircleDot, Glasses, Sparkles, Building2, Users, Car,
@@ -53,70 +55,106 @@ const itemVariants = {
   visible: { y: 0, opacity: 1, transition: { duration: 0.5, ease: "easeOut" } },
 } as const;
 
-const Home = () => (
-  <Layout>
-    {/* Hero */}
-    <section className="relative overflow-hidden text-primary-foreground min-h-[85vh] flex items-center">
-      <motion.div
-        initial={{ scale: 1.1, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ duration: 1.5, ease: "easeOut" }}
-        className="absolute inset-0 bg-cover bg-center"
-        style={{ backgroundImage: `url(${heroHome})` }}
-        aria-hidden
-      />
-      <div className="absolute inset-0 bg-hero-gradient opacity-80" aria-hidden />
-      <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-black/25 to-transparent" aria-hidden />
-      <div className="absolute inset-0 opacity-15 [background-image:radial-gradient(circle_at_20%_20%,white_1px,transparent_1px)] [background-size:32px_32px]" />
-      <div className="container relative py-20 md:py-32">
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-          className="max-w-3xl mx-auto text-center"
-        >
-          <motion.span variants={itemVariants} className="inline-block px-3 py-1 text-xs font-semibold rounded-full bg-white/15 backdrop-blur mb-6 tracking-wide">
-            OPTOMETRY CLINIC · GHANA
-          </motion.span>
-          <motion.h1 variants={itemVariants} className="text-4xl sm:text-5xl md:text-7xl font-extrabold leading-[1.1] mb-6 drop-shadow-sm">
-            {CLINIC.name}
-          </motion.h1>
-          <motion.p variants={itemVariants} className="text-2xl md:text-3xl font-light mb-6 opacity-95 flex items-center justify-center gap-3">
-            See Better <span className="h-0.5 w-12 bg-white/30" /> Live Brighter
-          </motion.p>
-          <motion.p variants={itemVariants} className="text-base md:text-xl opacity-90 max-w-xl mb-10 leading-relaxed mx-auto">
-            Comprehensive eye care for every stage of life — from routine exams to specialty
-            vision services and DVLA testing.
-          </motion.p>
-          <motion.div variants={itemVariants} className="flex flex-wrap gap-4 justify-center">
-            <Button asChild size="lg" className="bg-white text-primary hover:bg-white/90 shadow-elegant px-8 py-6 text-lg">
-              <Link to="/book"><CalendarCheck className="h-5 w-5 mr-2" /> Book an Appointment</Link>
-            </Button>
-            <Button asChild size="lg" variant="outline" className="bg-white/10 backdrop-blur border-white/40 text-primary-foreground hover:bg-white/20 hover:text-primary-foreground px-8 py-6 text-lg">
-              <Link to="/services">Our Services <ArrowRight className="h-4 w-4 ml-2" /></Link>
-            </Button>
-          </motion.div>
-        </motion.div>
-      </div>
-    </section>
+const Home = () => {
+  const [hero, setHero] = useState<HeroContent | null>(null);
+  const [announcement, setAnnouncement] = useState<Announcements | null>(null);
+  const [hours, setHours] = useState<Record<string, string> | null>(null);
 
-    {/* Working hours bar */}
-    <section className="bg-primary-soft border-y border-primary/10 overflow-hidden">
-      <motion.div 
-        initial={{ y: 20, opacity: 0 }}
-        whileInView={{ y: 0, opacity: 1 }}
-        viewport={{ once: true }}
-        className="container py-4 flex flex-wrap items-center justify-center gap-x-8 gap-y-2 text-sm text-primary font-semibold"
-      >
-        <span className="flex items-center gap-2"><Clock className="h-4 w-4" /> {CLINIC.hours.weekdays}</span>
-        <span className="hidden md:inline opacity-30 text-lg">|</span>
-        <span className="flex items-center gap-2"><Clock className="h-4 w-4" /> {CLINIC.hours.saturday}</span>
-        <span className="hidden md:inline opacity-30 text-lg">|</span>
-        <a href={`tel:${CLINIC.phones[0]}`} className="flex items-center gap-2 hover:translate-x-1 transition-transform">
-          <Phone className="h-4 w-4" /> {CLINIC.phones[0]}
-        </a>
-      </motion.div>
-    </section>
+  useEffect(() => {
+    const fetchContent = async () => {
+      const heroData = await getCMSContent("hero");
+      const newsData = await getCMSContent("announcements");
+      const hoursData = await getCMSContent("hours");
+      if (heroData) setHero(heroData);
+      if (newsData) setAnnouncement(newsData);
+      if (hoursData) setHours(hoursData);
+    };
+    fetchContent();
+  }, []);
+
+  return (
+    <Layout>
+      {/* Announcement Banner */}
+      {announcement?.enabled && (
+        <div className="bg-primary text-white py-3 px-4 text-center text-sm font-bold animate-in slide-in-from-top duration-700 relative z-50 shadow-lg">
+          <p className="flex items-center justify-center gap-2">
+            <Sparkles className="h-4 w-4 animate-pulse" />
+            {announcement.message}
+          </p>
+        </div>
+      )}
+
+      {/* Hero */}
+      <section className="relative overflow-hidden text-primary-foreground min-h-[85vh] flex items-center">
+        <motion.div
+          initial={{ scale: 1.1, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 1.5, ease: "easeOut" }}
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: `url(${heroHome})` }}
+          aria-hidden
+        />
+        <div className="absolute inset-0 bg-hero-gradient opacity-80" aria-hidden />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-black/25 to-transparent" aria-hidden />
+        <div className="absolute inset-0 opacity-15 [background-image:radial-gradient(circle_at_20%_20%,white_1px,transparent_1px)] [background-size:32px_32px]" />
+        <div className="container relative py-20 md:py-32">
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="max-w-4xl mx-auto text-center"
+          >
+            <motion.span variants={itemVariants} className="inline-block px-4 py-1.5 text-[10px] font-bold rounded-full bg-white/10 backdrop-blur-md mb-8 tracking-[0.3em] uppercase border border-white/20">
+              Transforming Vision · Nova Eye Care
+            </motion.span>
+            <motion.h1 variants={itemVariants} className="text-4xl sm:text-5xl md:text-8xl font-black leading-[1] mb-8 drop-shadow-xl text-balance">
+              {hero?.heading || CLINIC.name}
+            </motion.h1>
+            <motion.p variants={itemVariants} className="text-xl md:text-2xl font-medium mb-10 opacity-90 max-w-2xl mx-auto leading-relaxed">
+              {hero?.subheading || "Comprehensive eye care for every stage of life — from routine exams to specialty vision services and DVLA testing."}
+            </motion.p>
+            <motion.div variants={itemVariants} className="flex flex-wrap gap-5 justify-center">
+              <Button asChild size="lg" className="bg-white text-primary hover:bg-primary hover:text-white shadow-[0_20px_50px_rgba(0,0,0,0.3)] px-10 py-8 text-xl rounded-2xl transition-all duration-500 overflow-hidden relative group">
+                <Link to="/book" className="flex items-center font-bold">
+                  <CalendarCheck className="h-6 w-6 mr-3 group-hover:scale-110 transition-transform" /> 
+                  {hero?.cta1 || "Book Appointment"}
+                </Link>
+              </Button>
+              <Button asChild size="lg" variant="outline" className="bg-white/5 backdrop-blur-xl border-white/30 text-white hover:bg-white/10 px-10 py-8 text-xl rounded-2xl font-bold transition-all duration-500">
+                <Link to="/services" className="flex items-center">
+                  {hero?.cta2 || "Our Services"} <ArrowRight className="h-5 w-5 ml-3" />
+                </Link>
+              </Button>
+            </motion.div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Working hours bar */}
+      <section className="bg-primary-soft border-y border-primary/10 overflow-hidden relative group">
+        <div className="absolute inset-0 bg-primary/5 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 ease-in-out opacity-20" />
+        <motion.div 
+          initial={{ y: 20, opacity: 0 }}
+          whileInView={{ y: 0, opacity: 1 }}
+          viewport={{ once: true }}
+          className="container py-5 flex flex-wrap items-center justify-center gap-x-12 gap-y-4 text-xs text-primary font-black uppercase tracking-widest"
+        >
+          <span className="flex items-center gap-2.5">
+            <Clock className="h-4 w-4 opacity-40" /> 
+            Mon - Fri: {hours?.Monday || CLINIC.hours.weekdays} {hours?.Monday_to ? `- ${hours.Monday_to}` : ''}
+          </span>
+          <span className="hidden md:inline opacity-10 text-xl font-thin">|</span>
+          <span className="flex items-center gap-2.5">
+            <Clock className="h-4 w-4 opacity-40" /> 
+            Sat: {hours?.Saturday || CLINIC.hours.saturday} {hours?.Saturday_to ? `- ${hours.Saturday_to}` : ''}
+          </span>
+          <span className="hidden md:inline opacity-10 text-xl font-thin">|</span>
+          <a href={`tel:${CLINIC.phones[0]}`} className="flex items-center gap-2.5 group/phone hover:text-primary-dark transition-colors">
+            <Phone className="h-4 w-4 opacity-40 group-hover/phone:rotate-12 transition-transform" /> 
+            Emergency: {CLINIC.phones[0]}
+          </a>
+        </motion.div>
+      </section>
 
     {/* Services overview */}
     <section className="container py-20 md:py-28">
@@ -238,7 +276,8 @@ const Home = () => (
         </div>
       </motion.div>
     </section>
-  </Layout>
-);
+    </Layout>
+  );
+};
 
 export default Home;

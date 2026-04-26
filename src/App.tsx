@@ -28,6 +28,8 @@ import AdminNotifications from "./pages/admin/AdminNotifications.tsx";
 import AdminChatbot from "./pages/admin/AdminChatbot.tsx";
 import AdminSettings from "./pages/admin/AdminSettings.tsx";
 import AdminServices from "./pages/admin/AdminServices.tsx";
+import AdminCMS from "./pages/admin/AdminCMS.tsx";
+import AdminScreenings from "./pages/admin/AdminScreenings.tsx";
 import RegisterPatient from "./pages/RegisterPatient.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
@@ -120,6 +122,8 @@ const App = () => (
           <Route path="/admin/chatbot" element={<ProtectedRoute requireAdmin><AdminChatbot /></ProtectedRoute>} />
           <Route path="/admin/settings" element={<ProtectedRoute requireAdmin><AdminSettings /></ProtectedRoute>} />
           <Route path="/admin/services" element={<ProtectedRoute requireAdmin><AdminServices /></ProtectedRoute>} />
+          <Route path="/admin/cms" element={<ProtectedRoute requireAdmin><AdminCMS /></ProtectedRoute>} />
+          <Route path="/admin/screenings" element={<ProtectedRoute requireAdmin><AdminScreenings /></ProtectedRoute>} />
 
           </Routes>
         </MaintenanceManager>
