@@ -74,7 +74,8 @@ export const CLINIC = {
   name: "NOVA Eye Care Services",
   tagline: "See Better | Live Brighter",
   phones: ["0544172089", "0246613184"],
-  email: "novaeyecareservice@gmail.com",
+  email: "info@novaeyecareservice.com",
+  address: "Abuakwa - NsoNyamey3, Opposite Kasapreko Company Limited, Ashanti Region, Ghana",
   hours: {
     weekdays: "Mon–Fri: 8:00 am – 5:00 pm",
     saturday: "Saturday: 9:00 am – 2:00 pm",

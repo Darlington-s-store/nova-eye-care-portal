@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Layout } from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { SERVICES, CLINIC } from "@/lib/clinic";
 import { getCMSContent, HeroContent, Announcements } from "@/lib/cms";
 import { ApprovedReviews } from "@/components/ApprovedReviews";
@@ -9,7 +10,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
   Eye, CircleDot, Glasses, Sparkles, Building2, Users, Car,
-  Clock, Award, HeartHandshake, Microscope, ArrowRight, CalendarCheck, Phone,
+  Clock, Award, HeartHandshake, Microscope, ArrowRight, CalendarCheck, Phone, MapPin
 } from "lucide-react";
 import heroHome from "@/assets/hero-home.jpg";
 import generalEye from "@/assets/general-eye.jpg";
@@ -254,6 +255,83 @@ const Home = () => {
     >
       <ApprovedReviews />
     </motion.div>
+
+    {/* Location Section */}
+    <section className="container py-20 md:py-28 overflow-hidden">
+      <div className="grid lg:grid-cols-2 gap-12 items-center">
+        <motion.div
+          initial={{ opacity: 0, x: -40 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true }}
+          className="space-y-8"
+        >
+          <div>
+            <span className="text-primary font-bold text-sm tracking-widest uppercase mb-4 block">Visit Us</span>
+            <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-6 leading-tight">We are located at the heart of Abuakwa</h2>
+            <p className="text-muted-foreground text-lg leading-relaxed max-w-lg">
+              Our modern facility is conveniently situated opposite Kasapreko Company Limited. We offer a comfortable environment with the latest diagnostic technology.
+            </p>
+          </div>
+
+          <div className="space-y-6">
+            <div className="flex gap-4 items-start group">
+              <div className="h-12 w-12 rounded-2xl bg-primary-soft flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all shadow-sm shrink-0">
+                <MapPin className="h-6 w-6" />
+              </div>
+              <div>
+                <h4 className="font-bold text-lg mb-1">Clinic Address</h4>
+                <p className="text-muted-foreground">{CLINIC.address}</p>
+              </div>
+            </div>
+
+            <div className="flex gap-4 items-start group">
+              <div className="h-12 w-12 rounded-2xl bg-primary-soft flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all shadow-sm shrink-0">
+                <Clock className="h-6 w-6" />
+              </div>
+              <div>
+                <h4 className="font-bold text-lg mb-1">Working Hours</h4>
+                <div className="text-sm text-muted-foreground space-y-1">
+                  <p>{CLINIC.hours.weekdays}</p>
+                  <p>{CLINIC.hours.saturday}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <Button asChild variant="outline" size="lg" className="rounded-2xl px-8 h-14 font-bold border-2 hover:bg-primary/5">
+            <Link to="/contact">Get Directions <ArrowRight className="h-5 w-5 ml-2" /></Link>
+          </Button>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, x: 40 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true }}
+          className="relative group h-[450px] lg:h-[600px]"
+        >
+          <div className="absolute inset-0 bg-primary/20 rounded-[2.5rem] rotate-3 scale-105 group-hover:rotate-1 group-hover:scale-100 transition-transform duration-700 -z-10" />
+          <Card className="h-full w-full overflow-hidden border-border/40 rounded-[2.5rem] shadow-elegant relative z-10">
+            <iframe
+              title="NOVA Eye Care Location"
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3962.48422471!2d-1.72472!3d6.69472!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zNsKwNDEnNDEuMCJOIDHCsDQzJzI5LjAiVw!5e0!3m2!1sen!2sgh!4v1700000000000&q=Kasapreko+PLC+Abuakwa+Factory"
+              width="100%"
+              height="100%"
+              style={{ border: 0, filter: "contrast(1.1) brightness(0.95)" }}
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+            />
+            <div className="absolute top-6 left-6 right-6 flex justify-between items-start pointer-events-none">
+              <Badge className="bg-white/90 backdrop-blur text-primary border-white/20 shadow-lg px-4 py-2 rounded-xl text-xs font-bold pointer-events-auto">
+                Open Now
+              </Badge>
+              <Button size="icon" className="bg-white/90 backdrop-blur text-primary border-white/20 shadow-lg h-12 w-12 rounded-2xl pointer-events-auto hover:bg-white" onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent("Kasapreko PLC Abuakwa Factory")}`, '_blank')}>
+                <MapPin className="h-6 w-6" />
+              </Button>
+            </div>
+          </Card>
+        </motion.div>
+      </div>
+    </section>
 
     {/* CTA */}
     <section className="container py-20 md:py-28">

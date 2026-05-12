@@ -15,9 +15,14 @@ import {
   Users2, 
   AlertCircle,
   CheckCircle2,
-  ChevronLeft
+  ChevronLeft,
+  ShieldCheck,
+  FileHeart
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
+import { PageHero } from "@/components/PageHero";
+import heroAuth from "@/assets/hero-auth.jpg";
 
 export default function MedicalHistoryPage() {
   const { user } = useAuth();
@@ -33,8 +38,15 @@ export default function MedicalHistoryPage() {
 
   const fetchHistory = useCallback(async () => {
     if (!user) return;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data, error } = await (supabase as any).from("patient_medical_history")
+    const { data, error } = await (supabase as unknown as { 
+      from: (t: string) => { 
+        select: (s: string) => { 
+          eq: (k: string, v: string) => { 
+            maybeSingle: () => Promise<{data: Record<string, unknown> | null, error: unknown}> 
+          } 
+        } 
+      } 
+    }).from("patient_medical_history")
       .select("*")
       .eq("patient_id", user.id)
       .maybeSingle();
@@ -42,12 +54,13 @@ export default function MedicalHistoryPage() {
     if (error) {
       toast.error("Could not load medical history");
     } else if (data) {
+      const d = data as Record<string, string | null>;
       setHistory({
-        ocular_history: data.ocular_history || "",
-        systemic_conditions: data.systemic_conditions || "",
-        current_medications: data.current_medications || "",
-        family_eye_history: data.family_eye_history || "",
-        allergies: data.allergies || "",
+        ocular_history: d.ocular_history || "",
+        systemic_conditions: d.systemic_conditions || "",
+        current_medications: d.current_medications || "",
+        family_eye_history: d.family_eye_history || "",
+        allergies: d.allergies || "",
       });
     }
     setFetching(false);
@@ -60,27 +73,50 @@ export default function MedicalHistoryPage() {
   const handleSave = async () => {
     if (!user) return;
     setLoading(true);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { error } = await (supabase as any).from("patient_medical_history").upsert({
+    const { error } = await (supabase as unknown as { 
+      from: (t: string) => { 
+        upsert: (d: Record<string, unknown>, o: { onConflict: string }) => Promise<{error: unknown}> 
+      } 
+    }).from("patient_medical_history").upsert({
       patient_id: user.id,
       ...history,
       updated_at: new Date().toISOString(),
     }, { onConflict: 'patient_id' });
 
     if (error) {
-      toast.error(error.message);
+      toast.error((error as { message?: string }).message || "Could not save medical history");
+      setLoading(false);
+      return;
     } else {
       toast.success("Medical history updated successfully");
     }
     setLoading(false);
   };
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0, transition: { type: "spring" as const, damping: 25, stiffness: 200 } },
+  };
+
   if (fetching) {
     return (
       <Layout>
-        <div className="container py-20 flex flex-col items-center justify-center gap-4">
-          <Loader2 className="h-10 w-10 animate-spin text-primary opacity-50" />
-          <p className="font-medium animate-pulse">Consulting health records...</p>
+        <div className="container py-32 flex flex-col items-center justify-center gap-6">
+          <div className="relative">
+            <Loader2 className="h-16 w-16 animate-spin text-primary opacity-20" />
+            <FileHeart className="h-8 w-8 text-primary absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+          </div>
+          <p className="font-bold text-lg text-muted-foreground animate-pulse tracking-tight">Consulting health records...</p>
         </div>
       </Layout>
     );
@@ -88,99 +124,139 @@ export default function MedicalHistoryPage() {
 
   return (
     <Layout>
-      <div className="bg-muted/50 border-b">
-        <div className="container py-12">
-          <Button asChild variant="ghost" className="mb-6 rounded-lg">
-            <Link to="/dashboard" className="gap-2"><ChevronLeft className="h-4 w-4" /> Back to Dashboard</Link>
+      <PageHero
+        image={heroAuth}
+        eyebrow="Clinical Profile"
+        title="Medical History"
+        subtitle="Help our specialists provide precise care by keeping your health information up to date."
+      />
+
+      <div className="container py-16 -mt-12 relative z-10">
+        <motion.div 
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="mb-8"
+        >
+          <Button asChild variant="ghost" className="rounded-xl hover:bg-primary-soft hover:text-primary transition-all">
+            <Link to="/dashboard" className="gap-2 font-bold"><ChevronLeft className="h-4 w-4" /> Back to Dashboard</Link>
           </Button>
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-            <div>
-              <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-2">Medical History</h1>
-              <p className="text-muted-foreground max-w-xl">
-                Keep your ocular and systemic health information up to date to help our specialists provide precise care.
-              </p>
-            </div>
-            <Button onClick={handleSave} disabled={loading} size="lg" className="rounded-lg px-10 font-bold gap-2 shadow-sm">
-              {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Save className="h-5 w-5" />} Save Health Profile
-            </Button>
-          </div>
-        </div>
-      </div>
+        </motion.div>
 
-      <div className="container py-16">
-        <div className="grid gap-10 lg:grid-cols-12 max-w-6xl mx-auto">
+        <div className="grid gap-10 lg:grid-cols-12 max-w-7xl mx-auto">
           {/* Main Form */}
-          <div className="lg:col-span-8 space-y-8">
-            <Card className="p-8 rounded-xl border shadow-sm overflow-hidden relative">
-              <div className="space-y-8 relative z-10">
+          <div className="lg:col-span-8">
+            <motion.div
+              variants={containerVariants}
+              initial="hidden"
+              animate="show"
+              className="space-y-8"
+            >
+              <Card className="p-8 md:p-10 rounded-[2.5rem] shadow-elegant border-border/40 bg-white/80 backdrop-blur-sm relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-bl-full -mr-32 -mt-32 pointer-events-none" />
                 
-                <Section 
-                  icon={History} 
-                  title="Ocular History" 
-                  description="Details of previous eye surgeries, trauma, or diagnosed eye conditions."
-                  value={history.ocular_history}
-                  onChange={(v) => setHistory({...history, ocular_history: v})}
-                  placeholder="e.g. Previous laser surgery in 2018, history of glaucoma in right eye..."
-                />
+                <div className="space-y-12 relative z-10">
+                  <Section 
+                    icon={History} 
+                    title="Ocular History" 
+                    description="Previous eye surgeries, trauma, or diagnosed conditions."
+                    value={history.ocular_history}
+                    onChange={(v) => setHistory({...history, ocular_history: v})}
+                    placeholder="e.g. Previous laser surgery in 2018, history of glaucoma in right eye..."
+                    variants={itemVariants}
+                  />
 
-                <Section 
-                  icon={Stethoscope} 
-                  title="Systemic Conditions" 
-                  description="Chronic health issues such as diabetes, hypertension, or heart disease."
-                  value={history.systemic_conditions}
-                  onChange={(v) => setHistory({...history, systemic_conditions: v})}
-                  placeholder="e.g. Type 2 Diabetes for 5 years, Hypertension well-managed..."
-                />
+                  <Section 
+                    icon={Stethoscope} 
+                    title="Systemic Conditions" 
+                    description="Chronic health issues (diabetes, hypertension, heart disease)."
+                    value={history.systemic_conditions}
+                    onChange={(v) => setHistory({...history, systemic_conditions: v})}
+                    placeholder="e.g. Type 2 Diabetes for 5 years, Hypertension well-managed..."
+                    variants={itemVariants}
+                  />
 
-                <Section 
-                  icon={Pill} 
-                  title="Current Medications" 
-                  description="List any eye drops or systemic prescriptions you are currently taking."
-                  value={history.current_medications}
-                  onChange={(v) => setHistory({...history, current_medications: v})}
-                  placeholder="e.g. Metformin 500mg, Timolol eye drops (Daily)..."
-                />
+                  <Section 
+                    icon={Pill} 
+                    title="Current Medications" 
+                    description="Eye drops or systemic prescriptions you are taking."
+                    value={history.current_medications}
+                    onChange={(v) => setHistory({...history, current_medications: v})}
+                    placeholder="e.g. Metformin 500mg, Timolol eye drops (Daily)..."
+                    variants={itemVariants}
+                  />
 
-                <Section 
-                  icon={AlertCircle} 
-                  title="Allergies" 
-                  description="Drug allergies or sensitivities, especially to anaesthetics or iodine."
-                  value={history.allergies}
-                  onChange={(v) => setHistory({...history, allergies: v})}
-                  placeholder="e.g. Penicillin, specific preservative in eye drops..."
-                />
+                  <Section 
+                    icon={AlertCircle} 
+                    title="Allergies" 
+                    description="Drug sensitivities (anaesthetics, iodine, preservatives)."
+                    value={history.allergies}
+                    onChange={(v) => setHistory({...history, allergies: v})}
+                    placeholder="e.g. Penicillin, specific preservative in eye drops..."
+                    variants={itemVariants}
+                  />
 
-                <Section 
-                  icon={Users2} 
-                  title="Family Eye History" 
-                  description="Known vision problems in your immediate family (parents/siblings)."
-                  value={history.family_eye_history}
-                  onChange={(v) => setHistory({...history, family_eye_history: v})}
-                  placeholder="e.g. Father has macular degeneration, Sister has early onset cataracts..."
-                />
+                  <Section 
+                    icon={Users2} 
+                    title="Family Eye History" 
+                    description="Known vision problems in your immediate family."
+                    value={history.family_eye_history}
+                    onChange={(v) => setHistory({...history, family_eye_history: v})}
+                    placeholder="e.g. Father has macular degeneration, Sister has early onset cataracts..."
+                    variants={itemVariants}
+                  />
+                </div>
+              </Card>
 
-              </div>
-            </Card>
+              <motion.div variants={itemVariants} className="flex justify-end pt-4">
+                <Button 
+                  onClick={handleSave} 
+                  disabled={loading} 
+                  size="hero" 
+                  className="rounded-2xl px-12 font-bold gap-3 shadow-lg shadow-primary/20"
+                >
+                  {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Save className="h-5 w-5" />} Save Health Profile
+                </Button>
+              </motion.div>
+            </motion.div>
           </div>
 
           {/* Sidebar / Info */}
           <div className="lg:col-span-4 space-y-6">
-            <Card className="p-8 bg-primary text-primary-foreground rounded-xl shadow-sm border">
-              <h3 className="font-bold text-xl mb-4 flex items-center gap-2">
-                <CheckCircle2 className="h-5 w-5" /> Why this matters
-              </h3>
-              <p className="text-sm opacity-90 leading-relaxed space-y-4">
-                Your systemic health is closely linked to your ocular health. Conditions like diabetes and hypertension can directly impact your vision.
-                <br /><br />
-                Sharing this information allows our optometrists to detect issues earlier and tailor treatments specifically to your body's needs.
-              </p>
-            </Card>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+            >
+              <Card className="p-8 bg-primary text-primary-foreground rounded-[2rem] shadow-elegant border-none relative overflow-hidden group">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-bl-full -mr-16 -mt-16 group-hover:scale-110 transition-transform duration-700" />
+                <h3 className="font-bold text-2xl mb-6 flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-xl bg-white/20 flex items-center justify-center">
+                    <CheckCircle2 className="h-6 w-6" />
+                  </div>
+                  Why this matters
+                </h3>
+                <div className="space-y-4 text-primary-foreground/90 leading-relaxed font-medium">
+                  <p>
+                    Your systemic health is closely linked to your ocular health. Conditions like diabetes and hypertension can directly impact your vision.
+                  </p>
+                  <p>
+                    Sharing this information allows our optometrists to detect issues earlier and tailor treatments specifically to your body's needs.
+                  </p>
+                </div>
+              </Card>
+            </motion.div>
 
-            <div className="p-6 bg-muted/40 rounded-2xl border border-muted-foreground/10">
-              <p className="text-xs text-muted-foreground italic text-center">
-                Your data is stored securely and is only accessible by Nova Eye Care's clinical staff.
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6 }}
+              className="p-8 bg-secondary/30 rounded-[2rem] border border-border/40 text-center"
+            >
+              <ShieldCheck className="h-8 w-8 text-primary/40 mx-auto mb-4" />
+              <p className="text-xs text-muted-foreground font-semibold leading-relaxed">
+                Your data is stored securely and is only accessible by NOVA Eye Care's authorized clinical staff.
               </p>
-            </div>
+            </motion.div>
           </div>
         </div>
       </div>
@@ -188,24 +264,33 @@ export default function MedicalHistoryPage() {
   );
 }
 
-function Section({ icon: Icon, title, description, value, onChange, placeholder }: { icon: React.ElementType; title: string; description: string; value: string; onChange: (v: string) => void; placeholder: string }) {
+function Section({ icon: Icon, title, description, value, onChange, placeholder, variants }: { 
+  icon: React.ElementType; 
+  title: string; 
+  description: string; 
+  value: string; 
+  onChange: (v: string) => void; 
+  placeholder: string;
+  variants: import("framer-motion").Variants;
+}) {
   return (
-    <div className="space-y-4 group">
-      <div className="flex items-center gap-3">
-        <div className="h-10 w-10 bg-muted text-primary rounded-lg border flex items-center justify-center">
-          <Icon className="h-5 w-5" />
+    <motion.div variants={variants} className="space-y-5 group">
+      <div className="flex items-center gap-4">
+        <div className="h-12 w-12 bg-primary-soft text-primary rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110 duration-500 shadow-sm">
+          <Icon className="h-6 w-6" />
         </div>
         <div>
-          <h3 className="font-bold text-lg">{title}</h3>
-          <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">{description}</p>
+          <h3 className="font-bold text-xl tracking-tight">{title}</h3>
+          <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-[0.2em]">{description}</p>
         </div>
       </div>
       <Textarea 
         placeholder={placeholder}
-        className="rounded-lg border focus:ring-1 focus:ring-primary min-h-[100px] text-base"
+        className="rounded-[1.5rem] border-border/60 bg-white/50 focus:bg-white focus:ring-primary/20 min-h-[120px] text-base p-5 transition-all shadow-inner"
         value={value}
         onChange={(e) => onChange(e.target.value)}
       />
-    </div>
+    </motion.div>
   );
 }
+

@@ -15,8 +15,11 @@ import { TIME_SLOTS_WEEKDAY, TIME_SLOTS_SATURDAY } from "@/lib/clinic";
 import { toast } from "sonner";
 import {
   CalendarPlus, CalendarX, Calendar, Clock, FileText, Loader2,
-  User, Star, RefreshCw, ShieldCheck, ArrowRight, History, Eye
+  User, Star, RefreshCw, ShieldCheck, ArrowRight, History, Eye,
+  Sparkles, CheckCircle2, ChevronRight
 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { cn } from "@/lib/utils";
 
 type Appointment = {
   id: string;
@@ -44,10 +47,10 @@ type Screening = {
 };
 
 const statusStyles: Record<Appointment["status"], string> = {
-  pending: "bg-yellow-100 text-yellow-900 hover:bg-yellow-100",
-  confirmed: "bg-primary-soft text-primary hover:bg-primary-soft",
-  cancelled: "bg-muted text-muted-foreground hover:bg-muted",
-  completed: "bg-green-100 text-green-900 hover:bg-green-100",
+  pending: "bg-yellow-100 text-yellow-900 border-yellow-200",
+  confirmed: "bg-primary-soft text-primary border-primary/20",
+  cancelled: "bg-muted text-muted-foreground border-border/40",
+  completed: "bg-green-100 text-green-900 border-green-200",
 };
 
 const Dashboard = () => {
@@ -65,24 +68,32 @@ const Dashboard = () => {
     if (!user) return;
     (async () => {
       setLoading(true);
-      const [{ data: appts }, { data: prof }, { data: screens }] = await Promise.all([
+      const [apptsRes, profRes, screensRes] = await Promise.all([
         supabase.from("appointments").select("*").eq("user_id", user.id).order("appointment_date", { ascending: false }),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (supabase as any).from("profiles").select("full_name, phone, email, registration_completed").eq("id", user.id).single(),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (supabase as any).from("eye_screenings").select("id, screening_date, diagnosis, va_right_eye, va_left_eye").eq("patient_id", user.id).eq("is_visible_to_patient", true).order("screening_date", { ascending: false })
+        supabase.from("profiles").select("full_name, phone, email").eq("id", user.id).single(),
+        (supabase as unknown as { 
+          from: (t: string) => { 
+            select: (s: string) => { 
+              eq: (k: string, v: string) => { 
+                eq: (k2: string, v2: boolean) => { 
+                  order: (c: string, o: { ascending: boolean }) => Promise<{data: unknown, error: unknown}> 
+                } 
+              } 
+            } 
+          } 
+        }).from("eye_screenings").select("id, screening_date, diagnosis, va_right_eye, va_left_eye").eq("patient_id", user.id).eq("is_visible_to_patient", true).order("screening_date", { ascending: false })
       ]);
-      setAppointments((appts as Appointment[]) || []);
-      setProfile(prof as Profile);
-      setScreenings((screens as unknown as Screening[]) || []);
+      
+      setAppointments((apptsRes.data as Appointment[]) || []);
+      setProfile(profRes.data as Profile);
+      setScreenings((screensRes.data as unknown as Screening[]) || []);
       setLoading(false);
     })();
 
     const ch = supabase.channel(`dash-${user.id}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "appointments", filter: `user_id=eq.${user.id}` },
         async () => {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const { data: appts } = await (supabase as any).from("appointments").select("*").eq("user_id", user.id).order("appointment_date", { ascending: false });
+          const { data: appts } = await supabase.from("appointments").select("*").eq("user_id", user.id).order("appointment_date", { ascending: false });
           setAppointments((appts as Appointment[]) || []);
         })
       .subscribe();
@@ -123,6 +134,20 @@ const Dashboard = () => {
     setRNew({ date: "", time: "" });
   };
 
+  const container = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+      },
+    },
+  };
+
+  const item = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0, transition: { type: "spring" as const, damping: 25, stiffness: 200 } },
+  };
 
   const today = new Date(new Date().toDateString());
   const upcoming = appointments.filter((a) => a.status !== "cancelled" && a.status !== "completed" && new Date(a.appointment_date) >= today);
@@ -136,206 +161,278 @@ const Dashboard = () => {
   if (authLoading) {
     return (
       <Layout>
-        <div className="container py-20 flex justify-center"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
+        <div className="container py-32 flex justify-center"><Loader2 className="h-10 w-10 animate-spin text-primary/30" /></div>
       </Layout>
     );
   }
 
   return (
     <Layout>
-      <section className="bg-primary text-primary-foreground border-b shadow-sm">
-        <div className="container py-12 flex flex-wrap gap-4 items-center justify-between">
-          <div>
-            <p className="text-sm opacity-90 mb-1">Welcome back,</p>
-            <h1 className="text-2xl md:text-3xl font-bold">{profile?.full_name || user?.email}</h1>
-          </div>
-          <div className="flex gap-2 items-center">
+      <section className="bg-primary relative overflow-hidden pt-20 pb-24">
+        <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '40px 40px' }} />
+        <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full -mr-48 -mt-48 blur-3xl" />
+        
+        <div className="container relative z-10 flex flex-wrap gap-8 items-center justify-between text-white">
+          <motion.div 
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+          >
+            <span className="inline-flex items-center gap-2 px-3 py-1 text-[10px] font-bold rounded-full bg-white/10 text-white/80 mb-4 tracking-[0.2em] uppercase">
+              <Sparkles className="h-3 w-3" /> Patient Dashboard
+            </span>
+            <h1 className="text-3xl md:text-5xl font-bold tracking-tight mb-2">
+              Hello, {profile?.full_name?.split(' ')[0] || "Patient"}
+            </h1>
+            <p className="text-white/70 font-medium">Manage your eye care appointments and health records.</p>
+          </motion.div>
+          
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="flex flex-wrap gap-3"
+          >
             {isAdmin && (
-              <Button asChild variant="secondary" className="font-bold">
-                <Link to="/admin"><ShieldCheck className="h-4 w-4" /> Admin</Link>
+              <Button asChild variant="secondary" className="rounded-2xl h-14 px-8 font-bold gap-2 shadow-lg shadow-black/10">
+                <Link to="/admin"><ShieldCheck className="h-5 w-5" /> Admin Portal</Link>
               </Button>
             )}
-            <Button asChild variant="secondary" className="font-bold">
-              <Link to="/book"><CalendarPlus className="h-4 w-4" /> New Booking</Link>
+            <Button asChild variant="secondary" className="rounded-2xl h-14 px-8 font-bold gap-2 shadow-lg shadow-black/10">
+              <Link to="/book"><CalendarPlus className="h-5 w-5" /> New Booking</Link>
             </Button>
-          </div>
+          </motion.div>
         </div>
       </section>
 
       {!loading && profile && !profile.registration_completed && (
-        <section className="container mt-8 animate-fade-in">
-          <Card className="p-6 bg-amber-50 border-amber-200 border-2 rounded-xl relative overflow-hidden">
-            <div className="flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
-              <div className="flex items-center gap-4">
-                <div className="h-14 w-14 bg-amber-100 rounded-lg flex items-center justify-center text-amber-700">
-                  <User className="h-7 w-7" />
+        <section className="container mt-[-40px] relative z-20">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <Card className="p-8 bg-amber-50 border-amber-200 border-2 rounded-[2.5rem] shadow-elegant overflow-hidden group">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-amber-100 rounded-bl-full -mr-16 -mt-16 group-hover:scale-110 transition-transform duration-700" />
+              <div className="flex flex-col md:flex-row items-center justify-between gap-8 relative z-10">
+                <div className="flex items-center gap-6 text-center md:text-left">
+                  <div className="h-16 w-16 bg-amber-100 rounded-2xl flex items-center justify-center text-amber-700 shrink-0 shadow-sm">
+                    <User className="h-8 w-8" />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold text-amber-900 mb-1">Complete Your Profile</h2>
+                    <p className="text-amber-700/80 font-medium max-w-md">
+                      Required for first-time visitors to ensure the best clinical care.
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <h2 className="text-xl font-bold text-amber-900">Complete Your Patient Profile</h2>
-                  <p className="text-amber-700/80 text-sm max-w-md">
-                    Finish your registration to help our clinical team provide you with personalized care.
-                  </p>
-                </div>
+                <Button asChild size="hero" className="bg-amber-600 hover:bg-amber-700 text-white rounded-2xl px-10 font-bold gap-2 w-full md:w-auto shadow-lg shadow-amber-900/10 transition-all">
+                  <Link to="/register-patient">Finish Now <ArrowRight className="h-5 w-5" /></Link>
+                </Button>
               </div>
-              <Button asChild size="lg" className="bg-amber-600 hover:bg-amber-700 text-white rounded-lg px-8 font-bold gap-2 w-full md:w-auto shadow-sm">
-                <Link to="/register-patient">Finish Registration <ArrowRight className="h-4 w-4" /></Link>
-              </Button>
-            </div>
-          </Card>
+            </Card>
+          </motion.div>
         </section>
       )}
 
-      <section className="container py-10 grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-1 space-y-4">
-          <Card className="p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-soft text-primary">
-                <User className="h-5 w-5" />
-              </span>
-              <h2 className="font-semibold">Your Profile</h2>
-            </div>
-            <dl className="space-y-3 text-sm">
-              <div>
-                <dt className="text-xs text-muted-foreground uppercase tracking-wide">Name</dt>
-                <dd className="font-medium">{profile?.full_name || "—"}</dd>
+      <section className="container py-16 grid gap-10 lg:grid-cols-12 max-w-7xl mx-auto">
+        {/* Sidebar Info */}
+        <motion.div 
+          variants={container}
+          initial="hidden"
+          animate="show"
+          className="lg:col-span-4 space-y-6"
+        >
+          <motion.div variants={item}>
+            <Card className="p-8 rounded-[2rem] shadow-card border-border/40 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-primary-soft/50 rounded-bl-full -mr-16 -mt-16" />
+              <div className="flex items-center gap-4 mb-8">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary-soft text-primary shadow-sm">
+                  <User className="h-6 w-6" />
+                </div>
+                <h2 className="font-bold text-xl tracking-tight">Your Details</h2>
               </div>
-              <div>
-                <dt className="text-xs text-muted-foreground uppercase tracking-wide">Email</dt>
-                <dd className="font-medium break-all">{profile?.email || user?.email}</dd>
+              <div className="space-y-6">
+                <div>
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] mb-1">Full Name</p>
+                  <p className="font-bold text-lg text-foreground">{profile?.full_name || "—"}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] mb-1">Email Address</p>
+                  <p className="font-bold text-foreground break-all">{profile?.email || user?.email}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] mb-1">Contact Number</p>
+                  <p className="font-bold text-foreground">{profile?.phone || "—"}</p>
+                </div>
               </div>
-              <div>
-                <dt className="text-xs text-muted-foreground uppercase tracking-wide">Phone</dt>
-                <dd className="font-medium">{profile?.phone || "—"}</dd>
+              <Button asChild variant="outline" className="w-full mt-10 rounded-xl h-12 font-bold hover:bg-primary-soft hover:text-primary transition-all">
+                <Link to="/profile">Edit Profile Information</Link>
+              </Button>
+            </Card>
+          </motion.div>
+
+          <motion.div variants={item}>
+            <Card className="p-8 bg-primary/5 border-primary/10 rounded-[2rem] shadow-sm relative overflow-hidden group">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-primary border shadow-sm group-hover:rotate-12 transition-transform">
+                  <History className="h-5 w-5" />
+                </div>
+                <h2 className="font-bold text-lg">Medical History</h2>
               </div>
-            </dl>
-            <Button asChild variant="outline" size="sm" className="w-full mt-5">
-              <Link to="/profile">Edit profile</Link>
-            </Button>
-          </Card>
+              <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
+                Update your clinical details to help us personalize your eye care.
+              </p>
+              <Button asChild variant="outline" size="sm" className="w-full rounded-xl h-11 bg-white border-primary/10 font-bold hover:bg-primary hover:text-white transition-all">
+                <Link to="/medical-history" className="gap-2">Manage Profile <ChevronRight className="h-4 w-4" /></Link>
+              </Button>
+            </Card>
+          </motion.div>
 
-          <Card className="p-6">
-            <div className="flex items-center gap-3 mb-3">
-              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-muted text-primary border">
-                <Star className="h-5 w-5" />
-              </span>
-              <h2 className="font-semibold">Share experience</h2>
+          <motion.div variants={item}>
+            <Card className="p-8 bg-secondary/30 rounded-[2rem] border-none shadow-sm group">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-primary border shadow-sm group-hover:scale-110 transition-transform">
+                  <Star className="h-5 w-5" />
+                </div>
+                <h2 className="font-bold text-lg">Feedback</h2>
+              </div>
+              <p className="text-sm text-muted-foreground mb-6 leading-relaxed">Share your experience with us.</p>
+              <Button asChild variant="outline" size="sm" className="w-full rounded-xl h-11 bg-white font-bold hover:bg-primary hover:text-white transition-all border-none">
+                <Link to="/reviews">Write a Review</Link>
+              </Button>
+            </Card>
+          </motion.div>
+        </motion.div>
+
+        {/* Main Content */}
+        <div className="lg:col-span-8 space-y-12">
+          <motion.div
+            variants={container}
+            initial="hidden"
+            animate="show"
+          >
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="font-bold text-2xl tracking-tight">Upcoming Appointments</h2>
+              {upcoming.length > 0 && <Badge variant="secondary" className="rounded-lg font-bold bg-primary/10 text-primary border-none">{upcoming.length} active</Badge>}
             </div>
-            <p className="text-sm text-muted-foreground mb-4">Help others by leaving a review.</p>
-            <Button asChild size="sm" className="w-full">
-              <Link to="/reviews">Write a review</Link>
-            </Button>
-          </Card>
-
-          <Card className="p-6 bg-muted/30 border rounded-xl shadow-sm relative overflow-hidden group">
-            <div className="flex items-center gap-3 mb-4 relative z-10">
-              <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-background text-primary border shadow-sm transition-transform">
-                <History className="h-5 w-5" />
-              </span>
-              <h2 className="font-bold">Medical History</h2>
-            </div>
-            <p className="text-xs text-muted-foreground mb-5 relative z-10 leading-relaxed">
-              Update your clinical profile to help us personalize your care.
-            </p>
-            <Button asChild variant="outline" size="sm" className="w-full rounded-lg bg-background border transition-all relative z-10">
-              <Link to="/medical-history" className="gap-2">Manage History <ArrowRight className="h-4 w-4" /></Link>
-            </Button>
-          </Card>
-        </div>
-
-        <div className="lg:col-span-2 space-y-8">
-          <div>
-            <h2 className="font-bold text-xl mb-4">Upcoming Appointments</h2>
+            
             {loading ? (
-              <div className="flex justify-center py-10"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
+              <div className="flex justify-center py-20"><Loader2 className="h-10 w-10 animate-spin text-primary/20" /></div>
             ) : upcoming.length === 0 ? (
-              <Card className="p-8 text-center border-dashed border-2">
-                <Calendar className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-                <p className="text-muted-foreground mb-4">No upcoming appointments.</p>
-                <Button asChild><Link to="/book">Book your first appointment</Link></Button>
-              </Card>
+              <motion.div variants={item}>
+                <Card className="p-12 text-center border-dashed border-2 rounded-[2.5rem] bg-muted/20">
+                  <div className="h-20 w-20 bg-muted rounded-full flex items-center justify-center mx-auto mb-6">
+                    <Calendar className="h-10 w-10 text-muted-foreground/40" />
+                  </div>
+                  <h3 className="font-bold text-xl mb-2">No Appointments Scheduled</h3>
+                  <p className="text-muted-foreground mb-8 max-w-xs mx-auto italic">Looks like you haven't booked anything yet. Ready to see better?</p>
+                  <Button asChild size="hero" className="rounded-2xl px-10 font-bold"><Link to="/book">Schedule Exam Now</Link></Button>
+                </Card>
+              </motion.div>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {upcoming.map((a) => (
-                  <AppointmentCard key={a.id} a={a} onCancel={cancelAppointment} onReschedule={(x) => { setReschedule(x); setRNew({ date: x.appointment_date, time: x.appointment_time }); }} canManage />
+                  <motion.div key={a.id} variants={item}>
+                    <AppointmentCard a={a} onCancel={cancelAppointment} onReschedule={(x) => { setReschedule(x); setRNew({ date: x.appointment_date, time: x.appointment_time }); }} canManage />
+                  </motion.div>
                 ))}
               </div>
             )}
-          </div>
+          </motion.div>
 
           {past.length > 0 && (
-            <div>
-              <h2 className="font-bold text-xl mb-4">Past & Cancelled</h2>
-              <div className="space-y-3">
-                {past.map((a) => <AppointmentCard key={a.id} a={a} onCancel={cancelAppointment} onReschedule={() => {}} />)}
+            <motion.div
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+            >
+              <h2 className="font-bold text-xl mb-6 text-muted-foreground/60 tracking-tight">History & Activity</h2>
+              <div className="space-y-3 opacity-70 hover:opacity-100 transition-opacity">
+                {past.slice(0, 3).map((a) => <AppointmentCard key={a.id} a={a} onCancel={cancelAppointment} onReschedule={() => {}} />)}
               </div>
-            </div>
+            </motion.div>
           )}
 
           {screenings.length > 0 && (
-            <div className="pt-4">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="font-bold text-xl flex items-center gap-2">
-                  <Eye className="h-5 w-5 text-primary" /> Screening Results
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="pt-4"
+            >
+              <div className="flex items-center justify-between mb-8">
+                <h2 className="font-bold text-2xl tracking-tight flex items-center gap-3">
+                  <div className="h-10 w-10 bg-primary-soft text-primary rounded-xl flex items-center justify-center">
+                    <Eye className="h-6 w-6" />
+                  </div>
+                  Clinical Reports
                 </h2>
-                <Badge variant="secondary" className="rounded-lg bg-primary/10 text-primary border-0 font-bold px-3 py-1">
-                  Latest First
+                <Badge variant="secondary" className="rounded-xl bg-primary/10 text-primary border-0 font-bold px-4 py-2">
+                  Most Recent
                 </Badge>
               </div>
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid gap-6 sm:grid-cols-2">
                 {screenings.map((s) => (
-                  <Card key={s.id} className="p-6 rounded-xl border shadow-sm hover:bg-muted/10 transition-colors bg-white relative group">
-                    <div className="flex flex-col gap-4">
-                      <div className="flex justify-between items-start">
-                        <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground bg-muted px-2.5 py-1 rounded-md">
+                  <Card key={s.id} className="p-8 rounded-[2rem] border border-border/40 shadow-card hover:shadow-elegant transition-all bg-white relative group overflow-hidden">
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-bl-full -mr-12 -mt-12 group-hover:scale-110 transition-transform" />
+                    <div className="flex flex-col gap-6 relative z-10">
+                      <div className="flex justify-between items-center">
+                        <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground px-3 py-1.5 rounded-full bg-secondary/50">
                           {new Date(s.screening_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
                         </span>
-                        <div className="flex gap-1.5 transition-opacity">
-                          <Badge variant="outline" className="text-[10px] font-bold border-muted text-primary">{s.va_right_eye || '-'}</Badge>
-                          <Badge variant="outline" className="text-[10px] font-bold border-muted text-primary">{s.va_left_eye || '-'}</Badge>
+                        <div className="flex gap-2">
+                          <div className="flex flex-col items-end">
+                            <span className="text-[8px] font-bold text-muted-foreground/50 uppercase">R-Eye</span>
+                            <Badge variant="outline" className="text-xs font-bold border-primary/20 text-primary bg-primary/5">{s.va_right_eye || '-'}</Badge>
+                          </div>
+                          <div className="flex flex-col items-end">
+                            <span className="text-[8px] font-bold text-muted-foreground/50 uppercase">L-Eye</span>
+                            <Badge variant="outline" className="text-xs font-bold border-primary/20 text-primary bg-primary/5">{s.va_left_eye || '-'}</Badge>
+                          </div>
                         </div>
                       </div>
                       <div>
-                        <h4 className="font-bold text-foreground mb-1">Clinical Impression</h4>
-                        <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">"{s.diagnosis || "Consultation record saved."}"</p>
+                        <h4 className="font-bold text-lg mb-2 text-foreground flex items-center gap-2">
+                          Clinical Impression
+                        </h4>
+                        <p className="text-sm text-muted-foreground leading-relaxed italic">"{s.diagnosis || "Consultation record saved."}"</p>
                       </div>
                     </div>
                   </Card>
                 ))}
               </div>
-            </div>
+            </motion.div>
           )}
         </div>
       </section>
 
       <Dialog open={!!reschedule} onOpenChange={(o) => !o && setReschedule(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Reschedule appointment</DialogTitle>
-            <DialogDescription>{reschedule?.service}</DialogDescription>
+        <DialogContent className="rounded-[2.5rem] border-none shadow-elegant p-10 max-w-md">
+          <DialogHeader className="mb-6">
+            <DialogTitle className="text-2xl font-bold tracking-tight">Reschedule Visit</DialogTitle>
+            <DialogDescription className="font-medium text-primary uppercase text-[10px] tracking-[0.2em]">{reschedule?.service}</DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="rd">New date</Label>
+          <div className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="rd" className="font-bold text-xs uppercase tracking-widest text-muted-foreground">Select New Date</Label>
               <Input id="rd" type="date" min={minDate} value={rNew.date}
                 onChange={(e) => setRNew({ ...rNew, date: e.target.value, time: "" })}
-                className="mt-1.5" />
-              {rSunday && <p className="text-xs text-destructive mt-1">Closed on Sundays.</p>}
+                className="h-14 rounded-xl border-border/60 px-4 focus:ring-primary/20" />
+              {rSunday && <p className="text-[10px] font-bold text-destructive mt-1 uppercase tracking-wider">Closed on Sundays</p>}
             </div>
-            <div>
-              <Label>New time</Label>
+            <div className="space-y-2">
+              <Label className="font-bold text-xs uppercase tracking-widest text-muted-foreground">Available Slots</Label>
               <Select value={rNew.time} onValueChange={(v) => setRNew({ ...rNew, time: v })} disabled={!rNew.date || rSunday}>
-                <SelectTrigger className="mt-1.5"><SelectValue placeholder="Select a time" /></SelectTrigger>
-                <SelectContent className="max-h-64">
-                  {rSlots.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                <SelectTrigger className="h-14 rounded-xl border-border/60 px-4"><SelectValue placeholder="Choose a time" /></SelectTrigger>
+                <SelectContent className="max-h-64 rounded-xl border-border/60">
+                  {rSlots.map((t) => <SelectItem key={t} value={t} className="rounded-lg">{t}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setReschedule(null)}>Cancel</Button>
-            <Button variant="hero" onClick={submitReschedule} disabled={!rNew.date || !rNew.time || rSaving}>
-              {rSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Confirm reschedule"}
+          <DialogFooter className="mt-10 sm:flex-col gap-3">
+            <Button variant="hero" onClick={submitReschedule} disabled={!rNew.date || !rNew.time || rSaving} className="w-full h-14 rounded-2xl font-bold text-lg shadow-lg shadow-primary/20">
+              {rSaving ? <Loader2 className="h-5 w-5 animate-spin" /> : "Confirm New Time"}
             </Button>
+            <Button variant="ghost" onClick={() => setReschedule(null)} className="w-full h-12 rounded-xl font-bold text-muted-foreground">Keep Original</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -349,29 +446,46 @@ const AppointmentCard = ({ a, onCancel, onReschedule, canManage }: {
   onReschedule: (a: Appointment) => void;
   canManage?: boolean;
 }) => (
-  <Card className="p-5">
-    <div className="flex flex-wrap items-start justify-between gap-3 mb-3">
-      <div>
-        <h3 className="font-semibold">{a.service}</h3>
-        <p className="text-sm text-muted-foreground flex flex-wrap gap-x-4 gap-y-1 mt-1">
-          <span className="flex items-center gap-1"><Calendar className="h-3.5 w-3.5" /> {new Date(a.appointment_date).toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", year: "numeric" })}</span>
-          <span className="flex items-center gap-1"><Clock className="h-3.5 w-3.5" /> {a.appointment_time}</span>
+  <Card className="p-8 rounded-[2rem] border border-border/40 shadow-card hover:shadow-elegant transition-all duration-500 bg-white group">
+    <div className="flex flex-wrap items-start justify-between gap-6 mb-6">
+      <div className="flex items-start gap-5">
+        <div className={cn("h-14 w-14 rounded-2xl flex items-center justify-center shrink-0 shadow-sm border", 
+          a.status === 'confirmed' ? "bg-primary-soft text-primary border-primary/10" : "bg-muted text-muted-foreground border-border/40")}>
+          {a.status === 'confirmed' ? <CheckCircle2 className="h-7 w-7" /> : <Clock className="h-7 w-7" />}
+        </div>
+        <div>
+          <h3 className="font-bold text-xl tracking-tight mb-2 group-hover:text-primary transition-colors">{a.service}</h3>
+          <div className="flex flex-wrap gap-x-6 gap-y-2">
+            <span className="flex items-center gap-2 text-sm font-bold text-muted-foreground uppercase tracking-wider italic">
+              <Calendar className="h-4 w-4 text-primary" /> {new Date(a.appointment_date).toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" })}
+            </span>
+            <span className="flex items-center gap-2 text-sm font-bold text-muted-foreground uppercase tracking-wider italic">
+              <Clock className="h-4 w-4 text-primary" /> {a.appointment_time}
+            </span>
+          </div>
+        </div>
+      </div>
+      <Badge className={cn("rounded-full px-4 py-1.5 font-bold uppercase text-[10px] tracking-widest border shadow-sm", statusStyles[a.status])} variant="secondary">
+        {a.status === "pending" ? "Awaiting Confirmation" : a.status}
+      </Badge>
+    </div>
+    
+    {a.notes && (
+      <div className="mb-8 p-4 bg-muted/30 rounded-xl border border-border/40">
+        <p className="text-sm text-muted-foreground flex items-start gap-3">
+          <FileText className="h-4 w-4 mt-0.5 shrink-0 text-primary" />
+          <span className="italic leading-relaxed font-medium">"{a.notes}"</span>
         </p>
       </div>
-      <Badge className={statusStyles[a.status]} variant="secondary">{a.status === "pending" ? "Requested" : a.status}</Badge>
-    </div>
-    {a.notes && (
-      <p className="text-sm text-muted-foreground flex items-start gap-2 mb-3">
-        <FileText className="h-4 w-4 mt-0.5 shrink-0" />{a.notes}
-      </p>
     )}
+    
     {canManage && a.status !== "cancelled" && (
-      <div className="flex flex-wrap gap-2">
-        <Button size="sm" variant="outline" onClick={() => onReschedule(a)}>
+      <div className="flex flex-wrap gap-3 pt-2">
+        <Button size="sm" variant="outline" onClick={() => onReschedule(a)} className="rounded-xl h-11 px-6 font-bold gap-2 hover:bg-primary hover:text-white transition-all border-border/60">
           <RefreshCw className="h-4 w-4" /> Reschedule
         </Button>
-        <Button size="sm" variant="outline" className="text-destructive hover:text-destructive" onClick={() => onCancel(a)}>
-          <CalendarX className="h-4 w-4" /> Cancel
+        <Button size="sm" variant="ghost" className="rounded-xl h-11 px-6 font-bold gap-2 text-destructive hover:bg-destructive/10 hover:text-destructive transition-all" onClick={() => onCancel(a)}>
+          <CalendarX className="h-4 w-4" /> Cancel Booking
         </Button>
       </div>
     )}
@@ -379,3 +493,4 @@ const AppointmentCard = ({ a, onCancel, onReschedule, canManage }: {
 );
 
 export default Dashboard;
+

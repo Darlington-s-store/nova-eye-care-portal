@@ -117,7 +117,7 @@ const Contact = () => {
                   </div>
                   <div>
                     <div className="text-xs font-bold uppercase tracking-widest text-muted-foreground/60 mb-1">Main Location</div>
-                    <div className="font-bold text-lg">Accra, Ghana</div>
+                    <div className="font-bold text-lg">{CLINIC.address}</div>
                   </div>
                 </motion.li>
               </ul>
@@ -129,17 +129,32 @@ const Contact = () => {
              whileInView={{ opacity: 1, scale: 1 }}
              viewport={{ once: true }}
              transition={{ delay: 0.4 }}
+             className="relative group"
           >
-            <Card className="overflow-hidden border-border/60 rounded-3xl shadow-card h-[320px] relative">
+            <Card className="overflow-hidden border-border/60 rounded-3xl shadow-elegant h-[400px] relative z-0">
               <iframe
                 title="NOVA Eye Care Location"
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15881.0!2d-0.2!3d5.6!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m2!1m1!2zNcKwMzYnMDAuMCJOIDDCsDEyJzAwLjAiVw!5e0!3m2!1sen!2sgh!4v1700000000000"
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3962.48422471!2d-1.72472!3d6.69472!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zNsKwNDEnNDEuMCJOIDHCsDQzJzI5LjAiVw!5e0!3m2!1sen!2sgh!4v1700000000000&q=Kasapreko+PLC+Abuakwa+Factory"
                 width="100%"
                 height="100%"
-                style={{ border: 0 }}
+                style={{ border: 0, filter: "grayscale(0.2) contrast(1.1) brightness(0.95)" }}
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
               />
+              <div className="absolute bottom-4 left-4 right-4 bg-white/90 backdrop-blur-md p-4 rounded-2xl border border-white/20 shadow-xl flex items-center justify-between pointer-events-none group-hover:translate-y-0 translate-y-20 transition-transform duration-500">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-xl bg-primary flex items-center justify-center text-white">
+                    <MapPin className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold text-muted-foreground uppercase tracking-tight">Visit Us</div>
+                    <div className="text-sm font-bold text-foreground">Opposite Kasapreko, Abuakwa</div>
+                  </div>
+                </div>
+                <Button size="sm" variant="outline" className="rounded-lg h-9 pointer-events-auto shadow-sm" onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(CLINIC.address)}`, '_blank')}>
+                  Get Directions
+                </Button>
+              </div>
             </Card>
           </motion.div>
         </div>
