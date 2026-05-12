@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { CLINIC } from "./clinic";
 
 export type HeroContent = {
   heading: string;
@@ -19,11 +20,22 @@ export type Announcements = {
   message: string;
 };
 
+export type ClinicContact = {
+  name: string;
+  email: string;
+  phone1: string;
+  phone2: string;
+  address: string;
+  mapQuery: string;
+  tagline: string;
+};
+
 export type CMSContent = {
   hero?: HeroContent;
   team?: { members: TeamMember[] };
   hours?: Record<string, string>;
   announcements?: Announcements;
+  clinic?: ClinicContact;
 };
 
 const CACHE_KEY = "nova_cms_cache";
@@ -67,4 +79,19 @@ export const getCMSContent = async <T = unknown>(section: string): Promise<T | n
   }
 
   return null;
+};
+
+export const getClinicContact = async (): Promise<ClinicContact> => {
+  const data = await getCMSContent<ClinicContact>("clinic");
+  if (data) return data;
+  
+  return {
+    name: CLINIC.name,
+    email: CLINIC.email,
+    phone1: CLINIC.phones[0],
+    phone2: CLINIC.phones[1] || "",
+    address: CLINIC.address,
+    mapQuery: "Kasapreko PLC Abuakwa Factory",
+    tagline: CLINIC.tagline
+  };
 };

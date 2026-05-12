@@ -2,6 +2,7 @@ import { ReactNode } from "react";
 import { Navbar } from "./Navbar";
 import { Footer } from "./Footer";
 import { ChatWidget } from "./ChatWidget";
+import { AnnouncementBanner } from "./AnnouncementBanner";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLocation } from "react-router-dom";
 
@@ -10,6 +11,7 @@ export const Layout = ({ children }: { children: ReactNode }) => {
   
   return (
     <div className="flex min-h-screen flex-col bg-background selection:bg-primary/10 selection:text-primary">
+      <AnnouncementBanner />
       <Navbar />
       <AnimatePresence mode="wait">
         <motion.main

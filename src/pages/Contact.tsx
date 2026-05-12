@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Layout } from "@/components/Layout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,10 +11,24 @@ import { toast } from "sonner";
 import { PageHero } from "@/components/PageHero";
 import { motion, AnimatePresence } from "framer-motion";
 import heroContact from "@/assets/hero-contact.jpg";
+import { getClinicContact, ClinicContact, getCMSContent } from "@/lib/cms";
 
 const Contact = () => {
   const [form, setForm] = useState({ name: "", email: "", message: "" });
   const [sent, setSent] = useState(false);
+  const [clinic, setClinic] = useState<ClinicContact | null>(null);
+  const [hours, setHours] = useState<Record<string, string> | null>(null);
+
+  useEffect(() => {
+    (async () => {
+      const [c, h] = await Promise.all([
+        getClinicContact(),
+        getCMSContent<Record<string, string>>("hours")
+      ]);
+      setClinic(c);
+      if (h) setHours(h);
+    })();
+  }, []);
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,7 +38,7 @@ const Contact = () => {
     }
     const subject = encodeURIComponent(`Enquiry from ${form.name}`);
     const body = encodeURIComponent(`${form.message}\n\n— ${form.name} (${form.email})`);
-    window.location.href = `mailto:${CLINIC.email}?subject=${subject}&body=${body}`;
+    window.location.href = `mailto:${clinic?.email || CLINIC.email}?subject=${subject}&body=${body}`;
     setSent(true);
     toast.success("Opening your email client...");
   };
@@ -50,7 +64,7 @@ const Contact = () => {
         image={heroContact}
         eyebrow="Get in Touch"
         title="Contact Us"
-        subtitle="We'd love to hear from you. Call, email, or visit us in person — our team is here for you."
+        subtitle={clinic?.tagline || "We'd love to hear from you. Call, email, or visit us in person — our team is here for you."}
       />
 
       <section className="container py-20 lg:py-24 grid gap-12 lg:grid-cols-2">
@@ -71,7 +85,7 @@ const Contact = () => {
               </h2>
               
               <ul className="space-y-6">
-                {CLINIC.phones.map((p, idx) => (
+                {[clinic?.phone1 || CLINIC.phones[0], clinic?.phone2].filter(Boolean).map((p, idx) => (
                   <motion.li key={p} variants={item} className="flex items-start gap-4 group/item">
                     <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary-soft text-primary shrink-0 group-hover/item:bg-primary group-hover/item:text-white transition-all shadow-sm">
                       <Phone className="h-5 w-5" />
@@ -89,7 +103,7 @@ const Contact = () => {
                   </div>
                   <div>
                     <div className="text-xs font-bold uppercase tracking-widest text-muted-foreground/60 mb-1">Email Support</div>
-                    <a href={`mailto:${CLINIC.email}`} className="font-bold text-lg hover:text-primary break-all transition-colors">{CLINIC.email}</a>
+                    <a href={`mailto:${clinic?.email || CLINIC.email}`} className="font-bold text-lg hover:text-primary break-all transition-colors">{clinic?.email || CLINIC.email}</a>
                   </div>
                 </motion.li>
 
@@ -102,9 +116,28 @@ const Contact = () => {
                     <div className="bg-secondary/10 p-4 rounded-xl border border-border/40">
                       <table className="w-full text-sm font-medium">
                         <tbody>
-                          <tr className="border-b border-border/40"><td className="py-2 pr-4 opacity-70">Monday – Friday</td><td className="py-2 font-bold text-right">8:00 am – 5:00 pm</td></tr>
-                          <tr className="border-b border-border/40"><td className="py-2 pr-4 opacity-70">Saturday</td><td className="py-2 font-bold text-right">9:00 am – 2:00 pm</td></tr>
-                          <tr><td className="py-2 pr-4 opacity-70">Sunday</td><td className="py-2 font-bold text-right text-destructive">Closed</td></tr>
+                          <tr className="border-b border-border/40">
+                            <td className="py-2 pr-4 opacity-70">Mon – Fri</td>
+                            <td className="py-2 font-bold text-right">
+                              {hours?.Monday && hours?.Monday_to 
+                                ? `${hours.Monday} – ${hours.Monday_to}` 
+                                : "8:00 am – 5:00 pm"}
+                            </td>
+                          </tr>
+                          <tr className="border-b border-border/40">
+                            <td className="py-2 pr-4 opacity-70">Saturday</td>
+                            <td className="py-2 font-bold text-right">
+                              {hours?.Saturday && hours?.Saturday_to 
+                                ? `${hours.Saturday} – ${hours.Saturday_to}` 
+                                : "9:00 am – 2:00 pm"}
+                            </td>
+                          </tr>
+                          <tr>
+                            <td className="py-2 pr-4 opacity-70">Sunday</td>
+                            <td className="py-2 font-bold text-right text-destructive">
+                              {hours?.Sunday || "Closed"}
+                            </td>
+                          </tr>
                         </tbody>
                       </table>
                     </div>
@@ -117,7 +150,7 @@ const Contact = () => {
                   </div>
                   <div>
                     <div className="text-xs font-bold uppercase tracking-widest text-muted-foreground/60 mb-1">Main Location</div>
-                    <div className="font-bold text-lg">{CLINIC.address}</div>
+                    <div className="font-bold text-lg">{clinic?.address || CLINIC.address}</div>
                   </div>
                 </motion.li>
               </ul>
@@ -134,7 +167,7 @@ const Contact = () => {
             <Card className="overflow-hidden border-border/60 rounded-3xl shadow-elegant h-[400px] relative z-0">
               <iframe
                 title="NOVA Eye Care Location"
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3962.48422471!2d-1.72472!3d6.69472!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zNsKwNDEnNDEuMCJOIDHCsDQzJzI5LjAiVw!5e0!3m2!1sen!2sgh!4v1700000000000&q=Kasapreko+PLC+Abuakwa+Factory"
+                src={`https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3962.48422471!2d-1.72472!3d6.69472!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zNsKwNDEnNDEuMCJOIDHCsDQzJzI5LjAiVw!5e0!3m2!1sen!2sgh!4v1700000000000&q=${encodeURIComponent(clinic?.mapQuery || "Kasapreko PLC Abuakwa Factory")}`}
                 width="100%"
                 height="100%"
                 style={{ border: 0, filter: "grayscale(0.2) contrast(1.1) brightness(0.95)" }}
@@ -148,10 +181,10 @@ const Contact = () => {
                   </div>
                   <div>
                     <div className="text-xs font-bold text-muted-foreground uppercase tracking-tight">Visit Us</div>
-                    <div className="text-sm font-bold text-foreground">Opposite Kasapreko, Abuakwa</div>
+                    <div className="text-sm font-bold text-foreground line-clamp-1">{clinic?.mapQuery || "Opposite Kasapreko, Abuakwa"}</div>
                   </div>
                 </div>
-                <Button size="sm" variant="outline" className="rounded-lg h-9 pointer-events-auto shadow-sm" onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(CLINIC.address)}`, '_blank')}>
+                <Button size="sm" variant="outline" className="rounded-lg h-9 pointer-events-auto shadow-sm" onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(clinic?.mapQuery || clinic?.address || CLINIC.address)}`, '_blank')}>
                   Get Directions
                 </Button>
               </div>

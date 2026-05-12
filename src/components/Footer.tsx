@@ -1,65 +1,83 @@
 import { Link } from "react-router-dom";
-import { Mail, Phone, MapPin } from "lucide-react";
+import { Mail, Phone, MapPin, Clock } from "lucide-react";
 import logo from "@/assets/logo.jpeg";
 import { CLINIC } from "@/lib/clinic";
+import { useState, useEffect } from "react";
+import { getClinicContact, ClinicContact, getCMSContent } from "@/lib/cms";
 
-export const Footer = () => (
-  <footer className="border-t border-border bg-secondary/40 mt-20">
-    <div className="container py-12 grid gap-8 md:grid-cols-4">
-      <div className="md:col-span-2">
-        <Link to="/" className="flex items-center gap-3 font-bold text-primary mb-3">
-          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white overflow-hidden shadow-elegant">
-            <img src={logo} alt="NOVA Eye Care Logo" className="h-full w-full object-contain p-1" />
-          </span>
-          <span>NOVA Eye Care Services</span>
-        </Link>
-        <p className="text-sm text-muted-foreground max-w-md">
-          {CLINIC.tagline}. Professional optometry care in Ghana — comprehensive eye exams,
-          contact lenses, vision therapy, low vision services, and DVLA testing.
-        </p>
-      </div>
+export const Footer = () => {
+  const [clinic, setClinic] = useState<ClinicContact | null>(null);
+  const [hours, setHours] = useState<Record<string, string> | null>(null);
 
-      <div>
-        <h4 className="font-semibold mb-3 text-sm uppercase tracking-wide">Quick Links</h4>
-        <ul className="space-y-2 text-sm text-muted-foreground">
-          <li><Link to="/services" className="hover:text-primary transition-smooth">Services</Link></li>
-          <li><Link to="/book" className="hover:text-primary transition-smooth">Book Appointment</Link></li>
-          <li><Link to="/dvla" className="hover:text-primary transition-smooth">DVLA Eye Testing</Link></li>
-          <li><Link to="/about" className="hover:text-primary transition-smooth">About Us</Link></li>
-          <li><Link to="/contact" className="hover:text-primary transition-smooth">Contact</Link></li>
-        </ul>
-      </div>
+  useEffect(() => {
+    (async () => {
+      const [c, h] = await Promise.all([
+        getClinicContact(),
+        getCMSContent<Record<string, string>>("hours")
+      ]);
+      setClinic(c);
+      if (h) setHours(h);
+    })();
+  }, []);
 
-      <div>
-        <h4 className="font-semibold mb-3 text-sm uppercase tracking-wide">Contact</h4>
-        <ul className="space-y-2 text-sm text-muted-foreground">
-          {CLINIC.phones.map((p) => (
-            <li key={p} className="flex items-center gap-2">
-              <Phone className="h-4 w-4 text-primary" />
-              <a href={`tel:${p}`} className="hover:text-primary transition-smooth">{p}</a>
+  return (
+    <footer className="border-t border-border bg-secondary/40 mt-20">
+      <div className="container py-12 grid gap-8 md:grid-cols-4">
+        <div className="md:col-span-2">
+          <Link to="/" className="flex items-center gap-3 font-bold text-primary mb-3">
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white overflow-hidden shadow-elegant">
+              <img src={logo} alt="NOVA Eye Care Logo" className="h-full w-full object-contain p-1" />
+            </span>
+            <span>NOVA Eye Care Services</span>
+          </Link>
+          <p className="text-sm text-muted-foreground max-w-md">
+            {clinic?.tagline || CLINIC.tagline}. Professional optometry care in Ghana — comprehensive eye exams,
+            contact lenses, vision therapy, low vision services, and DVLA testing.
+          </p>
+        </div>
+
+        <div>
+          <h4 className="font-semibold mb-3 text-sm uppercase tracking-wide">Quick Links</h4>
+          <ul className="space-y-2 text-sm text-muted-foreground">
+            <li><Link to="/services" className="hover:text-primary transition-smooth">Services</Link></li>
+            <li><Link to="/book" className="hover:text-primary transition-smooth">Book Appointment</Link></li>
+            <li><Link to="/dvla" className="hover:text-primary transition-smooth">DVLA Eye Testing</Link></li>
+            <li><Link to="/about" className="hover:text-primary transition-smooth">About Us</Link></li>
+            <li><Link to="/contact" className="hover:text-primary transition-smooth">Contact</Link></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 className="font-semibold mb-3 text-sm uppercase tracking-wide">Contact</h4>
+          <ul className="space-y-2 text-sm text-muted-foreground">
+            {[clinic?.phone1 || CLINIC.phones[0], clinic?.phone2].filter(Boolean).map((p) => (
+              <li key={p} className="flex items-center gap-2">
+                <Phone className="h-4 w-4 text-primary" />
+                <a href={`tel:${p}`} className="hover:text-primary transition-smooth">{p}</a>
+              </li>
+            ))}
+            <li className="flex items-center gap-2">
+              <Mail className="h-4 w-4 text-primary" />
+              <a href={`mailto:${clinic?.email || CLINIC.email}`} className="hover:text-primary transition-smooth break-all">
+                {clinic?.email || CLINIC.email}
+              </a>
             </li>
-          ))}
-          <li className="flex items-center gap-2">
-            <Mail className="h-4 w-4 text-primary" />
-            <a href={`mailto:${CLINIC.email}`} className="hover:text-primary transition-smooth break-all">
-              {CLINIC.email}
-            </a>
-          </li>
-          <li className="flex items-start gap-2 pt-2">
-            <MapPin className="h-4 w-4 text-primary mt-0.5" />
-            <div>
-              <div>{CLINIC.hours.weekdays}</div>
-              <div>{CLINIC.hours.saturday}</div>
-              <div>{CLINIC.hours.sunday}</div>
-            </div>
-          </li>
-        </ul>
+            <li className="flex items-start gap-2 pt-2">
+              <Clock className="h-4 w-4 text-primary mt-0.5" />
+              <div className="text-xs">
+                <div>Mon-Fri: {hours?.Monday || "8:00 am"} - {hours?.Monday_to || "5:00 pm"}</div>
+                <div>Sat: {hours?.Saturday || "9:00 am"} - {hours?.Saturday_to || "2:00 pm"}</div>
+                <div>Sun: {hours?.Sunday || "Closed"}</div>
+              </div>
+            </li>
+          </ul>
+        </div>
       </div>
-    </div>
-    <div className="border-t border-border">
-      <div className="container py-4 text-xs text-muted-foreground text-center">
-        © {new Date().getFullYear()} NOVA Eye Care Services. All rights reserved.
+      <div className="border-t border-border">
+        <div className="container py-4 text-xs text-muted-foreground text-center">
+          © {new Date().getFullYear()} NOVA Eye Care Services. All rights reserved.
+        </div>
       </div>
-    </div>
-  </footer>
-);
+    </footer>
+  );
+};

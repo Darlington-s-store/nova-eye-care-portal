@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { SERVICES, CLINIC } from "@/lib/clinic";
-import { getCMSContent, HeroContent, Announcements } from "@/lib/cms";
+import { getCMSContent, HeroContent, Announcements, getClinicContact, ClinicContact } from "@/lib/cms";
 import { ApprovedReviews } from "@/components/ApprovedReviews";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
@@ -60,15 +60,18 @@ const Home = () => {
   const [hero, setHero] = useState<HeroContent | null>(null);
   const [announcement, setAnnouncement] = useState<Announcements | null>(null);
   const [hours, setHours] = useState<Record<string, string> | null>(null);
+  const [clinic, setClinic] = useState<ClinicContact | null>(null);
 
   useEffect(() => {
     const fetchContent = async () => {
       const heroData = await getCMSContent<HeroContent>("hero");
       const newsData = await getCMSContent<Announcements>("announcements");
       const hoursData = await getCMSContent<Record<string, string>>("hours");
+      const clinicData = await getClinicContact();
       if (heroData) setHero(heroData);
       if (newsData) setAnnouncement(newsData);
       if (hoursData) setHours(hoursData);
+      setClinic(clinicData);
     };
     fetchContent();
   }, []);
@@ -280,7 +283,7 @@ const Home = () => {
               </div>
               <div>
                 <h4 className="font-bold text-lg mb-1">Clinic Address</h4>
-                <p className="text-muted-foreground">{CLINIC.address}</p>
+                <p className="text-muted-foreground">{clinic?.address || CLINIC.address}</p>
               </div>
             </div>
 
@@ -291,8 +294,8 @@ const Home = () => {
               <div>
                 <h4 className="font-bold text-lg mb-1">Working Hours</h4>
                 <div className="text-sm text-muted-foreground space-y-1">
-                  <p>{CLINIC.hours.weekdays}</p>
-                  <p>{CLINIC.hours.saturday}</p>
+                  <p>Mon - Fri: {hours?.Monday || "8:00 am"} - {hours?.Monday_to || "5:00 pm"}</p>
+                  <p>Sat: {hours?.Saturday || "9:00 am"} - {hours?.Saturday_to || "2:00 pm"}</p>
                 </div>
               </div>
             </div>
@@ -313,7 +316,7 @@ const Home = () => {
           <Card className="h-full w-full overflow-hidden border-border/40 rounded-[2.5rem] shadow-elegant relative z-10">
             <iframe
               title="NOVA Eye Care Location"
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3962.48422471!2d-1.72472!3d6.69472!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zNsKwNDEnNDEuMCJOIDHCsDQzJzI5LjAiVw!5e0!3m2!1sen!2sgh!4v1700000000000&q=Kasapreko+PLC+Abuakwa+Factory"
+              src={`https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3962.48422471!2d-1.72472!3d6.69472!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zNsKwNDEnNDEuMCJOIDHCsDQzJzI5LjAiVw!5e0!3m2!1sen!2sgh!4v1700000000000&q=${encodeURIComponent(clinic?.mapQuery || "Kasapreko PLC Abuakwa Factory")}`}
               width="100%"
               height="100%"
               style={{ border: 0, filter: "contrast(1.1) brightness(0.95)" }}
@@ -324,7 +327,7 @@ const Home = () => {
               <Badge className="bg-white/90 backdrop-blur text-primary border-white/20 shadow-lg px-4 py-2 rounded-xl text-xs font-bold pointer-events-auto">
                 Open Now
               </Badge>
-              <Button size="icon" className="bg-white/90 backdrop-blur text-primary border-white/20 shadow-lg h-12 w-12 rounded-2xl pointer-events-auto hover:bg-white" onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent("Kasapreko PLC Abuakwa Factory")}`, '_blank')}>
+              <Button size="icon" className="bg-white/90 backdrop-blur text-primary border-white/20 shadow-lg h-12 w-12 rounded-2xl pointer-events-auto hover:bg-white" onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(clinic?.mapQuery || clinic?.address || CLINIC.address)}`, '_blank')}>
                 <MapPin className="h-6 w-6" />
               </Button>
             </div>

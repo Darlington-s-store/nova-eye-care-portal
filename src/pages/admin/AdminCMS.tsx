@@ -52,6 +52,20 @@ export default function AdminCMS() {
       data.forEach((s: CMSSection) => {
         cmsData[s.section_key] = s.content_json;
       });
+      
+      // Seed defaults if missing for clinic
+      if (!cmsData.clinic) {
+        cmsData.clinic = {
+          name: "NOVA Eye Care Services",
+          email: "info@novaeyecareservice.com",
+          phone1: "0544172089",
+          phone2: "0246613184",
+          address: "Abuakwa - NsoNyamey3, Opposite Kasapreko Company Limited, Ashanti Region, Ghana",
+          mapQuery: "Kasapreko PLC Abuakwa Factory",
+          tagline: "See Better | Live Brighter"
+        };
+      }
+      
       setSections(cmsData);
     }
     setFetching(false);
@@ -286,6 +300,77 @@ export default function AdminCMS() {
                   </div>
                 </div>
               ))}
+            </div>
+          </Card>
+        </TabsContent>
+
+        {/* Clinic Contact */}
+        <TabsContent value="contact">
+          <Card className="p-8 border rounded-xl">
+            <div className="flex justify-between items-center mb-8">
+              <h2 className="text-2xl font-bold">Clinic Contact Information</h2>
+              <Button onClick={() => handleSave("clinic")} disabled={loading} className="rounded-lg px-10 font-bold">
+                Save Contact
+              </Button>
+            </div>
+            <div className="grid gap-6 max-w-3xl">
+              <div className="space-y-2">
+                <label className="text-sm font-bold ml-1">Clinic Name</label>
+                <Input 
+                  value={sections.clinic?.name || ""} 
+                  onChange={(e) => updateSection("clinic", { ...sections.clinic, name: e.target.value })}
+                  placeholder="NOVA Eye Care Services"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-bold ml-1">Clinic Tagline</label>
+                <Input 
+                  value={sections.clinic?.tagline || ""} 
+                  onChange={(e) => updateSection("clinic", { ...sections.clinic, tagline: e.target.value })}
+                  placeholder="See Better | Live Brighter"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-bold ml-1">Email Address</label>
+                <Input 
+                  value={sections.clinic?.email || ""} 
+                  onChange={(e) => updateSection("clinic", { ...sections.clinic, email: e.target.value })}
+                  placeholder="info@novaeyecareservice.com"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-bold ml-1">Primary Phone</label>
+                  <Input 
+                    value={sections.clinic?.phone1 || ""} 
+                    onChange={(e) => updateSection("clinic", { ...sections.clinic, phone1: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-bold ml-1">Secondary Phone</label>
+                  <Input 
+                    value={sections.clinic?.phone2 || ""} 
+                    onChange={(e) => updateSection("clinic", { ...sections.clinic, phone2: e.target.value })}
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-bold ml-1">Main Address</label>
+                <Textarea 
+                  value={sections.clinic?.address || ""} 
+                  onChange={(e) => updateSection("clinic", { ...sections.clinic, address: e.target.value })}
+                  rows={2}
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-bold ml-1">Google Maps Query (Landmark)</label>
+                <Input 
+                  value={sections.clinic?.mapQuery || ""} 
+                  onChange={(e) => updateSection("clinic", { ...sections.clinic, mapQuery: e.target.value })}
+                  placeholder="e.g. Kasapreko PLC Abuakwa Factory"
+                />
+                <p className="text-xs text-muted-foreground italic px-1">This will be used for the map embed and directions link.</p>
+              </div>
             </div>
           </Card>
         </TabsContent>
