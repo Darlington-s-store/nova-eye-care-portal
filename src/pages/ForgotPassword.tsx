@@ -16,15 +16,17 @@ const ForgotPassword = () => {
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    console.log("Attempting password reset for:", email);
     const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
       redirectTo: `${window.location.origin}/reset-password`,
     });
     setLoading(false);
     if (error) {
+      console.error("Password reset error:", error);
       toast.error(error.message);
       return;
     }
+    console.log("Password reset email sent successfully");
     setSent(true);
   };
 

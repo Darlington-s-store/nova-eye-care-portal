@@ -80,12 +80,13 @@ const MaintenanceManager = ({ children }: { children: React.ReactNode }) => {
   if (maintenance === null) return null;
   
   const isAdminPath = location.pathname.startsWith("/admin");
+  const isAuthPath = ["/auth", "/forgot-password", "/reset-password"].includes(location.pathname);
   
   // Using a stable fragment container prevents DOM nodes from being "orphaned" 
   // during the abrupt switch to Maintenance mode, fixing the removeChild error.
   return (
     <>
-      {maintenance && !isAdminPath ? <Maintenance /> : children}
+      {maintenance && !isAdminPath && !isAuthPath ? <Maintenance /> : children}
     </>
   );
 };
